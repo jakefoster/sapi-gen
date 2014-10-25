@@ -27,7 +27,7 @@ using org.ncore.Common;
 using org.ncore.Diagnostics;
 using org.ncore.ServicedApi;
 using org.ncore.ServicedApi.Persistence;
-using Entities = <#=model.Namespace#>.Api.Services;
+using Services = <#=model.Namespace#>.Api.Services;
 using <#=model.Namespace#>.Api.Silos;
 using <#=model.Namespace#>.Orm.Fake;
 using StoreTypes = <#=model.Namespace#>.Orm.Fake.StoreTypes;
@@ -48,10 +48,10 @@ namespace <#=model.Namespace#>.Orm.Fake.Stores
         {
             _parentStore = parentStore;
 			
-            Type entityType = typeof( Entities.<#=factype.Name#> );
+            Type entityType = typeof( Services.<#=factype.Name#> );
             foreach( FieldInfo info in entityType.GetFields( BindingFlags.Public | BindingFlags.Static ) )
             {
-                if( info.FieldType == typeof( Entities.<#=factype.Name#> ) )
+                if( info.FieldType == typeof( Services.<#=factype.Name#> ) )
                 {
                     dynamic value = info.GetValue( null );
 
@@ -215,7 +215,7 @@ foreach( ChildReferencePropertyModel childReference in factype.ChildReferences.V
             if( _parentStore.<#=childService.PluralName#>.Items.Count( i => i.<#=childReference.ChildKey#> == item.<#=childReference.ParentKey#> ) > 0 )
             {
 				// TODO: Custom exception type
-                throw new ApplicationException( String.Format( "Referential integrity violation.  Entity store <#=childService.PluralName#> has Entities with <#=childReference.ChildKey#> key value {0}.", item.<#=childReference.ParentKey#> )  );
+                throw new ApplicationException( String.Format( "Referential integrity violation.  Entity store <#=childService.PluralName#> has Services with <#=childReference.ChildKey#> key value {0}.", item.<#=childReference.ParentKey#> )  );
             }
 <#
 	}
@@ -226,7 +226,7 @@ foreach( ChildReferencePropertyModel childReference in factype.ChildReferences.V
             if( _parentStore.<#=childFactype.PluralName#>.Items.Count( i => i.<#=childReference.ChildKey#> == item.<#=childReference.ParentKey#> ) > 0 )
             {
 				// TODO: Custom exception type
-                throw new ApplicationException( String.Format( "Referential integrity violation.  Factype <#=childFactype.PluralName#> has Entities with <#=childReference.ChildKey#> key value {0}.", item.<#=childReference.ParentKey#> )  );
+                throw new ApplicationException( String.Format( "Referential integrity violation.  Factype <#=childFactype.PluralName#> has Services with <#=childReference.ChildKey#> key value {0}.", item.<#=childReference.ParentKey#> )  );
             }
 <#
 	}

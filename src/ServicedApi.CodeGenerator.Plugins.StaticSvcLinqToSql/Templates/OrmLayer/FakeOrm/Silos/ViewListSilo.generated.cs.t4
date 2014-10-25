@@ -23,7 +23,7 @@ using System.Text;
 using org.ncore.Common;
 using org.ncore.ServicedApi;
 using org.ncore.ServicedApi.Persistence;
-using Entities = <#=model.Namespace#>.Api.Services;
+using Services = <#=model.Namespace#>.Api.Services;
 using <#=model.Namespace#>.Api.Silos;
 using <#=model.Namespace#>.Orm.Fake.Stores;
 using StoreTypes = <#=model.Namespace#>.Orm.Fake.StoreTypes;

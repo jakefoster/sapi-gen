@@ -23,7 +23,7 @@ using System.Text;
 using org.ncore.Common;
 using org.ncore.ServicedApi;
 using org.ncore.ServicedApi.Persistence;
-using Entities = <#=model.Namespace#>.Api.Services;
+using Services = <#=model.Namespace#>.Api.Services;
 using <#=model.Namespace#>.Api.Silos;
 using <#=model.Namespace#>.Orm.Fake.Stores;
 using StoreTypes = <#=model.Namespace#>.Orm.Fake.StoreTypes;
@@ -64,7 +64,7 @@ namespace <#=model.Namespace#>.Orm.Fake.Silos
 	if( service.CreateOperation != null )
 	{	
 #>
-		public void Create( Entities.<#=service.Name#> instance )
+		public void Create( Services.<#=service.Name#> instance )
         {
             StoreTypes.<#=service.Name#> storeObject = new StoreTypes.<#=service.Name#>();
 
@@ -81,7 +81,7 @@ namespace <#=model.Namespace#>.Orm.Fake.Silos
 	if( service.ReadOperation != null )
 	{
 #>
-		public Entities.<#=service.Name#> Read( <#=service.IdentifierProperty.Type#> <#=service.IdentifierProperty.Name.ToInternalName()#> )
+		public Services.<#=service.Name#> Read( <#=service.IdentifierProperty.Type#> <#=service.IdentifierProperty.Name.ToInternalName()#> )
         {
             StoreTypes.<#=service.Name#> storeObject = _typedStore.Read( <#=service.IdentifierProperty.Name.ToInternalName()#> );
             return _toEntity( storeObject );
@@ -93,7 +93,7 @@ namespace <#=model.Namespace#>.Orm.Fake.Silos
 	if( service.UpdateOperation != null )
 	{
 #>        
-		public void Update( Entities.<#=service.Name#> instance )
+		public void Update( Services.<#=service.Name#> instance )
         {
             StoreTypes.<#=service.Name#> storeObject = _typedStore.Read( instance.<#=service.IdentifierProperty.Name#> );
 
@@ -121,29 +121,29 @@ namespace <#=model.Namespace#>.Orm.Fake.Silos
 	foreach( ReadByParentOperationModel operation in service.ReadByParentOperations.Values )
 	{
 #>
-		public List< Entities.<#=service.Name#> > <#=operation.Name#>( <#=operation.KeyType#> <#=operation.ParentKey.ToInternalName()#> )
+		public List< Services.<#=service.Name#> > <#=operation.Name#>( <#=operation.KeyType#> <#=operation.ParentKey.ToInternalName()#> )
         {
 			List<StoreTypes.<#=service.Name#>> storeObjects = _store.<#=service.PluralName#>.Items.Where( c => c.<#=operation.ChildKey#> == <#=operation.ParentKey.ToInternalName()#> ).ToList();
-            return _toEntities( storeObjects );
+            return _toServices( storeObjects );
         }
 <#
 	}
 #>
-        private List< Entities.<#=service.Name#> > _toEntities( List<StoreTypes.<#=service.Name#>> storeObjects )
+        private List< Services.<#=service.Name#> > _toServices( List<StoreTypes.<#=service.Name#>> storeObjects )
         {
-            List< Entities.<#=service.Name#> > entities = new List< Entities.<#=service.Name#> >( storeObjects.Count );
+            List< Services.<#=service.Name#> > Services = new List< Services.<#=service.Name#> >( storeObjects.Count );
             foreach( StoreTypes.<#=service.Name#> storeObject in storeObjects )
             {
-                Entities.<#=service.Name#> entitiy = _toEntity( storeObject );
-                entities.Add( entitiy );
+                Services.<#=service.Name#> entitiy = _toEntity( storeObject );
+                Services.Add( entitiy );
             }
-            return entities;
+            return Services;
         }
 		
-		private List<StoreTypes.<#=service.Name#>> _toStoreObjects( List< Entities.<#=service.Name#> > entities )
+		private List<StoreTypes.<#=service.Name#>> _toStoreObjects( List< Services.<#=service.Name#> > Services )
         {
-            List<StoreTypes.<#=service.Name#>> storeObjects = new List<StoreTypes.<#=service.Name#>>( entities.Count );
-            foreach( Entities.<#=service.Name#> entity in entities )
+            List<StoreTypes.<#=service.Name#>> storeObjects = new List<StoreTypes.<#=service.Name#>>( Services.Count );
+            foreach( Services.<#=service.Name#> entity in Services )
             {
                 StoreTypes.<#=service.Name#> storeObject = _toStoreObject( entity );
                 storeObjects.Add( storeObject );
@@ -151,19 +151,19 @@ namespace <#=model.Namespace#>.Orm.Fake.Silos
             return storeObjects;
         }
 		
-		private Entities.<#=service.Name#> _toEntity( StoreTypes.<#=service.Name#> storeObject )
+		private Services.<#=service.Name#> _toEntity( StoreTypes.<#=service.Name#> storeObject )
         {
             if( storeObject == null )
             {
                 return null;
             }
 
-            Entities.<#=service.Name#> entity = new Entities.<#=service.Name#>();
+            Services.<#=service.Name#> entity = new Services.<#=service.Name#>();
             _copyMembers( storeObject, entity );
             return entity;
         }
 		
-		private StoreTypes.<#=service.Name#> _toStoreObject( Entities.<#=service.Name#> entity )
+		private StoreTypes.<#=service.Name#> _toStoreObject( Services.<#=service.Name#> entity )
         {
             if( entity == null )
             {
@@ -176,9 +176,9 @@ namespace <#=model.Namespace#>.Orm.Fake.Silos
         }
 		
 		
-        partial void _beforeCopyMembers( Entities.<#=service.Name#> from, StoreTypes.<#=service.Name#> to );
-        partial void _afterCopyMembers( Entities.<#=service.Name#> from, StoreTypes.<#=service.Name#> to );
-        private void _copyMembers( Entities.<#=service.Name#> from, StoreTypes.<#=service.Name#> to )
+        partial void _beforeCopyMembers( Services.<#=service.Name#> from, StoreTypes.<#=service.Name#> to );
+        partial void _afterCopyMembers( Services.<#=service.Name#> from, StoreTypes.<#=service.Name#> to );
+        private void _copyMembers( Services.<#=service.Name#> from, StoreTypes.<#=service.Name#> to )
         {
             if( from == null )
             {
@@ -210,9 +210,9 @@ namespace <#=model.Namespace#>.Orm.Fake.Silos
 			_afterCopyMembers( from, to );
 		}
 		
-        partial void _beforeCopyMembers( StoreTypes.<#=service.Name#> from, Entities.<#=service.Name#> to );
-        partial void _afterCopyMembers( StoreTypes.<#=service.Name#> from, Entities.<#=service.Name#> to );
-        private void _copyMembers( StoreTypes.<#=service.Name#> from, Entities.<#=service.Name#> to )
+        partial void _beforeCopyMembers( StoreTypes.<#=service.Name#> from, Services.<#=service.Name#> to );
+        partial void _afterCopyMembers( StoreTypes.<#=service.Name#> from, Services.<#=service.Name#> to );
+        private void _copyMembers( StoreTypes.<#=service.Name#> from, Services.<#=service.Name#> to )
         {
             if( from == null )
             {

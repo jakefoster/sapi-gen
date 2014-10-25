@@ -26,7 +26,7 @@ using org.ncore.Common;
 using org.ncore.Diagnostics;
 using org.ncore.ServicedApi;
 using org.ncore.ServicedApi.Persistence;
-using Entities = <#=model.Namespace#>.Api.Services;
+using Services = <#=model.Namespace#>.Api.Services;
 using <#=model.Namespace#>.Api.Silos;
 using <#=model.Namespace#>.Orm.Fake;
 using StoreTypes = <#=model.Namespace#>.Orm.Fake.StoreTypes;
@@ -41,9 +41,9 @@ namespace <#=model.Namespace#>.Orm.Fake.Stores
 		[DataMember]
         private <#=service.IdentifierProperty.Type#> _next<#=service.IdentifierProperty.Name#> = 1;
 		[DataMember]
-        private Dictionary<int, StoreTypes.<#=service.Name#>> _shadowEntries = new Dictionary<int, StoreTypes.<#=service.Name#>>();
+        private Dictionary<<#=service.IdentifierProperty.Type#>, StoreTypes.<#=service.Name#>> _shadowEntries = new Dictionary<<#=service.IdentifierProperty.Type#>, StoreTypes.<#=service.Name#>>();
         [DataMember]
-		private Dictionary<int, StoreTypes.<#=service.Name#>> _entries = new Dictionary<int, StoreTypes.<#=service.Name#>>();
+		private Dictionary<<#=service.IdentifierProperty.Type#>, StoreTypes.<#=service.Name#>> _entries = new Dictionary<<#=service.IdentifierProperty.Type#>, StoreTypes.<#=service.Name#>>();
 
         public <#=service.Name#>Store( ObjectStore parentStore )
         {
@@ -125,7 +125,7 @@ if( service.VersionProperty != null )
 
         public void BeginTransaction()
         {
-            _shadowEntries = new Dictionary<int, StoreTypes.<#=service.Name#>>( _entries );
+            _shadowEntries = new Dictionary<<#=service.IdentifierProperty.Type#>, StoreTypes.<#=service.Name#>>( _entries );
         }
 
         public void CompleteTransaction( bool commit )
@@ -136,7 +136,7 @@ if( service.VersionProperty != null )
             }
             else
             {
-                _entries = new Dictionary<int, StoreTypes.<#=service.Name#>>( _shadowEntries );
+                _entries = new Dictionary<<#=service.IdentifierProperty.Type#>, StoreTypes.<#=service.Name#>>( _shadowEntries );
             }
         }
 		
@@ -184,7 +184,7 @@ foreach( ChildReferencePropertyModel childReference in service.ChildReferences.V
             if( _parentStore.<#=childService.PluralName#>.Items.Count( related => related.<#=childReference.ChildKey#> == item.<#=childReference.ParentKey#> ) > 0 )
             {
 				// TODO: Custom exception type
-                throw new ApplicationException( String.Format( "Referential integrity violation.  Entity store <#=childService.PluralName#> has Entities with <#=childReference.ChildKey#> key value {0}.", item.<#=childReference.ParentKey#> )  );
+                throw new ApplicationException( String.Format( "Referential integrity violation.  Entity store <#=childService.PluralName#> has Services with <#=childReference.ChildKey#> key value {0}.", item.<#=childReference.ParentKey#> )  );
             }
 <#
 	}

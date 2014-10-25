@@ -24,7 +24,7 @@ using <#=model.Namespace#>.Api;
 using <#=model.Namespace#>.Api.Services;
 using <#=model.Namespace#>.Api.Security;
 using <#=model.Namespace#>.Orm.Fake;
-using Entities = <#=model.Namespace#>.Orm.Fake.Entities;
+using Fakes = <#=model.Namespace#>.Orm.Fake.Entities;
 using org.ncore.Common;
 using org.ncore.ServicedApi;
 
