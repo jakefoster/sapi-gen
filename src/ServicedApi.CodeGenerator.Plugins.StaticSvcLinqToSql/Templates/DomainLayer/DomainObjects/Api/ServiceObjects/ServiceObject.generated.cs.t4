@@ -1,0 +1,530 @@
+﻿<#@ assembly name="System.Core" #>
+<#@ assembly name="System.Xml" #>
+<#@ assembly name="System.Xml.Linq" #>
+<#@ import namespace="org.ncore.ServicedApi.CodeGenerator.Api" #>
+<#@ import namespace="org.ncore.ServicedApi.CodeGenerator.Api.Model" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.IO" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Xml" #>
+<#@ import namespace="System.Xml.Linq" #>
+<#@ import namespace="org.ncore.Common" #>
+<#
+ServicedApiModel model = ( (org.ncore.ServicedApi.CodeGenerator.T4Templating.TemplatingHost)Host ).Model;
+string serviceName = Host.ResolveParameterValue( null, null, "TargetObjectName" );
+ServiceModel service = model.Services[ serviceName ];
+#>
+<#@ include file="Header.generated.cs.t4" #>
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Text;
+using System.Transactions;
+using org.ncore.Common;
+using org.ncore.Extensions;
+using org.ncore.ServicedApi;
+using org.ncore.ServicedApi.Container;
+using org.ncore.ServicedApi.Persistence;
+using <#=model.Namespace#>.Api.Silos;
+
+namespace <#=model.Namespace#>.Api.Services
+{
+	[DebuggerDisplay("<#=service.IdentifierProperty.Name#> = {_<#=service.IdentifierProperty.Name#>}")]
+    public partial class <#=service.Name#>
+    {
+		#region Member Variables & Properties
+		protected <#=service.Name#> _Original { get; set; }		
+        protected I<#=service.Name#>Silo _Silo
+        {
+            get { return (I<#=service.Name#>Silo)ServiceContext.Current.DataContext.GetSilo<I<#=service.Name#>Silo>(); }
+        }
+
+<#
+	foreach( ServiceAttributeModel property in service.Attributes.Values )
+	{
+		// TODO: Does this belong in the ServiceModel object?  JF
+		string propertyType = property.Type;
+		if( property.IsVersion && ( property.Type == "System.Byte[]" || property.Type == "Byte[]" || property.Type == "byte[]" ) )
+		{
+			propertyType = "System.String";
+		}
+#>
+		protected <#=propertyType#> _<#=property.Name#>;
+		<#=property.Visibility.Keyword#> <#=propertyType#> <#=property.Name#>
+        {
+            get
+            {
+<#
+			if( property.IsVersion && ( propertyType == "System.Byte[]" || propertyType == "Byte[]" || propertyType == "byte[]" ) )
+			{
+#>
+				return this._<#=property.Name#> != null ? HexString.FromByteArray( this._<#=property.Name#> ) : null;
+<#
+			}else{
+#>
+				return this._<#=property.Name#>;
+<#
+			}
+#>
+            }
+            set
+            {
+<#
+			if( property.IsVersion && ( propertyType == "System.Byte[]" || propertyType == "Byte[]" || propertyType == "byte[]" ) )
+			{
+#>			
+				this._<#=property.Name#> = value != null ? HexString.ToByteArray( value ) : null;
+<#
+			}else{
+#>
+                this._<#=property.Name#> = value;
+<#
+			}
+#>				
+            }
+        }
+<#
+	}
+
+	foreach( ParentReferencePropertyModel property in service.ParentReferences.Values )
+	{
+		if( model.Factypes.ContainsKey( property.ParentType ) )
+		{
+#>
+        <#=property.Visibility.Keyword#> <#=property.ParentType#> <#=property.Name#>
+        {
+            get
+            {
+                return (<#=property.ParentType#>)this.<#=property.ChildKey#>;
+            }
+        }
+
+<#
+		}
+	}
+#>
+
+        #endregion Member Variables & Properties
+
+        #region Create Methods
+<#
+	if( service.CreateOperation != null && service.CreateOperation.Visibility.Precedence >= VisibilityFactype.Public.Precedence )
+	{
+#>
+        public static <#=service.Name#> Create( <#=service.Name#> instance )
+        {
+            using( ServiceContext.Current = new ServiceContext( Kernel.GetOrCreateObject<IDataContext>() ) )
+            {
+                instance.create();
+                return instance.Clone();
+            }
+        }
+<#
+	}
+
+	if( service.CreateOperation != null && service.CreateOperation.Visibility.Precedence >= VisibilityFactype.Internal.Precedence )
+	{
+#>
+		partial void _beforeCreate();
+        partial void _afterCreate();
+        internal void create()
+        {
+            using( TransactionScope scope = ServiceContext.Current.DataContext.GetScope() )
+            {
+				this._beforeCreate();
+				this._create();
+				this._afterCreate();
+				
+				scope.Complete();
+            }
+        }
+<#
+	}
+	
+	// TODO: Implementation for protected method?  JF
+	
+	if( service.CreateOperation != null )
+	{
+#>
+		partial void _beforePrivateCreate();
+        partial void _afterPrivateCreate();
+		private void _create()
+        {
+            using( TransactionScope scope = ServiceContext.Current.DataContext.GetScope() )
+            {
+				this._beforePrivateCreate();
+                this._Silo.Create( this );
+                this._Original = this.Clone();
+                scope.Complete();
+				this._afterPrivateCreate();
+            }
+        }
+<#
+	}
+#>
+		#endregion Create Methods
+		
+		#region Read Methods
+<#
+	if( service.ReadOperation != null && service.ReadOperation.Visibility.Precedence >= VisibilityFactype.Public.Precedence )
+	{
+#>
+		public static <#=service.Name#> Read( <#=service.IdentifierProperty.Type#> <#=service.IdentifierProperty.Name.ToInternalName()#> )
+        {
+            using( ServiceContext.Current = new ServiceContext( Kernel.GetOrCreateObject<IDataContext>() ) )
+            {
+                return <#=service.Name#>.read( <#=service.IdentifierProperty.Name.ToInternalName()#> );
+            }
+        }
+<#
+	}
+	
+	if( service.ReadOperation != null && service.ReadOperation.Visibility.Precedence >= VisibilityFactype.Internal.Precedence )
+	{
+#>
+		static partial void _beforeRead( <#=service.IdentifierProperty.Type#> <#=service.IdentifierProperty.Name.ToInternalName()#> );
+		static partial void _afterRead( <#=service.IdentifierProperty.Type#> <#=service.IdentifierProperty.Name.ToInternalName()#> );
+        internal static <#=service.Name#> read( <#=service.IdentifierProperty.Type#> <#=service.IdentifierProperty.Name.ToInternalName()#> )
+        {
+            using( TransactionScope scope = ServiceContext.Current.DataContext.GetScope() )
+            {
+				<#=service.Name#>._beforeRead( <#=service.IdentifierProperty.Name.ToInternalName()#> );
+				<#=service.Name#> instance = <#=service.Name#>._read( <#=service.IdentifierProperty.Name.ToInternalName()#> );
+                scope.Complete();
+				<#=service.Name#>._afterRead( <#=service.IdentifierProperty.Name.ToInternalName()#> );
+                return instance;
+            }
+        }
+<#
+	}
+	
+	// TODO: Implementation for protected method?  JF
+	
+	if( service.ReadOperation != null )
+	{
+#>
+		static partial void _beforePrivateRead( <#=service.IdentifierProperty.Type#> <#=service.IdentifierProperty.Name.ToInternalName()#> );
+		static partial void _afterPrivateRead( <#=service.IdentifierProperty.Type#> <#=service.IdentifierProperty.Name.ToInternalName()#> );
+		private static <#=service.Name#> _read( <#=service.IdentifierProperty.Type#> <#=service.IdentifierProperty.Name.ToInternalName()#> )
+        {
+            using( TransactionScope scope = ServiceContext.Current.DataContext.GetScope() )
+            {
+				<#=service.Name#>._beforePrivateRead( <#=service.IdentifierProperty.Name.ToInternalName()#> );
+                I<#=service.Name#>Silo silo = (I<#=service.Name#>Silo)ServiceContext.Current.DataContext.GetSilo<I<#=service.Name#>Silo>();
+                <#=service.Name#> instance = silo.Read( <#=service.IdentifierProperty.Name.ToInternalName()#> );
+                scope.Complete();
+				instance._Original = instance.Clone();
+				<#=service.Name#>._afterPrivateRead( <#=service.IdentifierProperty.Name.ToInternalName()#> );
+                return instance;
+            }
+        }
+<#
+	}
+#>
+		#endregion Read Methods
+		
+		#region Update Methods
+<#
+	if( service.UpdateOperation != null && service.UpdateOperation.Visibility.Precedence >= VisibilityFactype.Public.Precedence )
+	{
+#>
+        public static <#=service.Name#> Update( <#=service.Name#> instance )
+        {
+            using( ServiceContext.Current = new ServiceContext( Kernel.GetOrCreateObject<IDataContext>() ) )
+            {
+                instance.update();
+                return instance.Clone();
+            }
+        }
+<#
+	}
+	
+	if( service.UpdateOperation != null && service.UpdateOperation.Visibility.Precedence >= VisibilityFactype.Internal.Precedence )
+	{
+#>
+		partial void _beforeUpdate();
+        partial void _afterUpdate();
+        internal void update()
+        {
+            using( TransactionScope scope = ServiceContext.Current.DataContext.GetScope() )
+            {
+				if( this._Original == null )
+				{
+					<#=service.Name#> current = <#=service.Name#>.read( this.<#=service.IdentifierProperty.Name.ToPublicName()#> );
+
+					this._Original = this.Clone();
+				}
+				this._beforeUpdate();
+				this._update();
+
+                scope.Complete();
+				this._afterUpdate();
+            }
+        }
+<#
+	}
+	
+	// TODO: Implementation for protected method?  JF
+	
+	if( service.UpdateOperation != null )
+	{
+#>
+		partial void _beforePrivateUpdate();
+        partial void _afterPrivateUpdate();
+		private void _update()
+        {
+            using( TransactionScope scope = ServiceContext.Current.DataContext.GetScope() )
+            {
+				if( this._Original == null )
+				{
+					<#=service.Name#> current = <#=service.Name#>.read( this.<#=service.IdentifierProperty.Name.ToPublicName()#> );
+
+					this._Original = this.Clone();
+				}
+				
+				this._beforePrivateUpdate();
+                this._Silo.Update( this );
+                this._Original = this.Clone();
+
+                scope.Complete();
+				this._afterPrivateUpdate();
+            }
+        }
+<#
+	}
+#>
+		#endregion Update Methods
+		
+		#region Delete Methods
+<#
+	if( service.DeleteOperation != null && service.DeleteOperation.Visibility.Precedence >= VisibilityFactype.Public.Precedence )
+	{
+#>
+        public static void Delete( <#=service.IdentifierProperty.Type#> <#=service.IdentifierProperty.Name.ToInternalName()#> )
+        {
+            using( ServiceContext.Current = new ServiceContext( Kernel.GetOrCreateObject<IDataContext>() ) )
+            {
+                <#=service.Name#>.delete( <#=service.IdentifierProperty.Name.ToInternalName()#> );
+            }
+        }
+<#
+	}
+	
+	if( service.DeleteOperation != null && service.DeleteOperation.Visibility.Precedence >= VisibilityFactype.Internal.Precedence )
+	{
+#>
+		static partial void _beforeDelete( <#=service.IdentifierProperty.Type#> <#=service.IdentifierProperty.Name.ToInternalName()#> );
+		static partial void _afterDelete( <#=service.IdentifierProperty.Type#> <#=service.IdentifierProperty.Name.ToInternalName()#> );
+		internal static void delete( <#=service.IdentifierProperty.Type#> <#=service.IdentifierProperty.Name.ToInternalName()#> )
+		{
+			using( TransactionScope scope = ServiceContext.Current.DataContext.GetScope() )
+			{
+				<#=service.Name#>._beforeDelete( <#=service.IdentifierProperty.Name.ToInternalName()#> );
+				<#=service.Name#>._delete( <#=service.IdentifierProperty.Name.ToInternalName()#> );
+				scope.Complete();
+				<#=service.Name#>._afterDelete( <#=service.IdentifierProperty.Name.ToInternalName()#> );
+			}
+		}
+<#
+	}
+	
+	// TODO: Implementation for protected method?  JF
+	
+	if( service.DeleteOperation != null )
+	{
+#>
+		static partial void _beforePrivateDelete( <#=service.IdentifierProperty.Type#> <#=service.IdentifierProperty.Name.ToInternalName()#> );
+		static partial void _afterPrivateDelete( <#=service.IdentifierProperty.Type#> <#=service.IdentifierProperty.Name.ToInternalName()#> );
+		private static void _delete( <#=service.IdentifierProperty.Type#> <#=service.IdentifierProperty.Name.ToInternalName()#> )
+		{
+			using( TransactionScope scope = ServiceContext.Current.DataContext.GetScope() )
+			{
+				<#=service.Name#>._beforePrivateDelete( <#=service.IdentifierProperty.Name.ToInternalName()#> );
+				I<#=service.Name#>Silo silo = (I<#=service.Name#>Silo)ServiceContext.Current.DataContext.GetSilo<I<#=service.Name#>Silo>();
+				silo.Delete( <#=service.IdentifierProperty.Name.ToInternalName()#> );
+				scope.Complete();
+				<#=service.Name#>._afterPrivateDelete( <#=service.IdentifierProperty.Name.ToInternalName()#> );
+			}
+		}
+<#
+	}		
+#>
+		#endregion Delete Methods
+		
+		#region ReadChildren Methods
+<#
+	// TODO: For all "navigator" methods: 
+	//		Logic into a private instead of the internal?
+	//		Hooks like "beforeReadByBlah" and "afterReadByBlah"?
+
+	foreach( ReadChildrenOperationModel operation in service.ReadChildrenOperations.Values )
+	{
+		if( operation.Visibility.Precedence >= VisibilityFactype.Public.Precedence )
+		{
+#>
+        public static List< <#=operation.ChildType#> > <#=operation.Name#>( <#=operation.KeyType#> <#=operation.ParentKey.ToInternalName()#> )
+        {
+            using( ServiceContext.Current = new ServiceContext( Kernel.GetOrCreateObject<IDataContext>() ) )
+            {
+                return <#=service.Name#>.<#=operation.Name.ToInternalName()#>( <#=operation.ParentKey.ToInternalName()#> );
+            }
+        }
+		
+		public List< <#=operation.ChildType#> > <#=operation.Name#>()
+        {
+            using( ServiceContext.Current = new ServiceContext( Kernel.GetOrCreateObject<IDataContext>() ) )
+            {
+                return this.<#=operation.Name.ToInternalName()#>();
+            }
+        }
+		
+<#
+		}
+
+		if( operation.Visibility.Precedence >= VisibilityFactype.Internal.Precedence )
+		{
+#>
+		internal static List< <#=operation.ChildType#> > <#=operation.Name.ToInternalName()#>( <#=operation.KeyType#> <#=operation.ParentKey.ToInternalName()#> )
+        {
+            using( TransactionScope scope = ServiceContext.Current.DataContext.GetScope() )
+            {
+                List< <#=operation.ChildType#> > list = <#=operation.ChildType#>.<#=operation.ChildOperation.ToInternalName()#>( <#=operation.ParentKey.ToInternalName()#> );
+                scope.Complete();
+                return list;
+            }
+        }
+		
+		internal List< <#=operation.ChildType#> > <#=operation.Name.ToInternalName()#>()
+        {
+            using( TransactionScope scope = ServiceContext.Current.DataContext.GetScope() )
+            {
+                List< <#=operation.ChildType#> > list = <#=operation.ChildType#>.<#=operation.ChildOperation.ToInternalName()#>( this.<#=operation.ParentKey.ToPublicName()#> );
+                scope.Complete();
+                return list;
+            }
+        }	
+		
+<#
+		}
+	}
+#>
+		#endregion ReadChildren Methods
+		
+		#region ReadParent Methods
+<#
+	foreach( ReadParentOperationModel operation in service.ReadParentOperations.Values )
+	{
+		if( operation.Visibility.Precedence >= VisibilityFactype.Public.Precedence )
+		{
+#>
+		public <#=operation.ParentType#> <#=operation.Name#>()
+        {
+            using( ServiceContext.Current = new ServiceContext( Kernel.GetOrCreateObject<IDataContext>() ) )
+            {
+                return this.<#=operation.Name.ToInternalName()#>();
+            }
+        }
+		
+<#
+		}
+
+		if( operation.Visibility.Precedence >= VisibilityFactype.Internal.Precedence )
+		{
+#>
+		internal <#=operation.ParentType#> <#=operation.Name.ToInternalName()#>()
+        {
+            using( TransactionScope scope = ServiceContext.Current.DataContext.GetScope() )
+            {
+<#
+			if( model.Services.Keys.Contains( operation.ParentType ) )
+			{
+				ServiceAttributeModel childType = service.Attributes[ operation.ChildKey ];
+				// TODO: This is kind of corny, but we only have the Type expressed as a string.  JF
+				string parameter = "this." + operation.ChildKey;
+				if( childType.Type.StartsWith( "System.Nullable" ) )
+				{
+					parameter = parameter + ".Value";
+				}
+#>
+                <#=operation.ParentType#> instance = <#=operation.ParentType#>.read( <#=parameter#> );
+<#
+			}
+			else if( model.Factypes.Keys.Contains( operation.ParentType ) )
+			{
+#>
+				<#=operation.ParentType#> instance = this.<#=operation.ChildKey#>;
+<#
+			}
+			else
+			{
+				throw new ApplicationException( "Parent is not of a valid model type." );
+			}
+#>
+                scope.Complete();
+                return instance;
+            }
+        }
+
+<#
+		}
+	}
+#>
+		#endregion ReadParent Methods
+		
+		#region ReadByParent Methods
+<#
+	foreach( ReadByParentOperationModel operation in service.ReadByParentOperations.Values )
+	{
+		if( operation.Visibility.Precedence >= VisibilityFactype.Public.Precedence )
+		{
+#>
+        public static List< <#=service.Name#> > <#=operation.Name#>( <#=operation.KeyType#> <#=operation.ParentKey.ToInternalName()#> )
+        {
+            using( ServiceContext.Current = new ServiceContext( Kernel.GetOrCreateObject<IDataContext>() ) )
+            {
+                return <#=service.Name#>.<#=operation.Name.ToInternalName()#>( <#=operation.ParentKey.ToInternalName()#> );
+            }
+        }
+		
+<#
+		}
+
+		if( operation.Visibility.Precedence >= VisibilityFactype.Internal.Precedence )
+		{
+#>
+		internal static List< <#=service.Name#> > <#=operation.Name.ToInternalName()#>( <#=operation.KeyType#> <#=operation.ParentKey.ToInternalName()#> )
+        {
+            using( TransactionScope scope = ServiceContext.Current.DataContext.GetScope() )
+            {
+                I<#=service.Name#>Silo silo = (I<#=service.Name#>Silo)ServiceContext.Current.DataContext.GetSilo<I<#=service.Name#>Silo>();
+                List< <#=service.Name#> > list = silo.<#=operation.Name#>( <#=operation.ParentKey.ToInternalName()#> );
+                scope.Complete();
+                return list;
+            }
+        }
+		
+<#
+		}
+	}
+#>
+		#endregion ReadByParent Methods
+
+        #region Utility Methods
+        public <#=service.Name#> Clone()
+        {
+            return (<#=service.Name#>)this.MemberwiseClone();
+        }
+
+        public static <#=service.Name#> Clone( <#=service.Name#> instance )
+        {
+            if( instance != null )
+            {
+                return instance.Clone();
+            }
+            return null;
+        }
+        #endregion Utility Methods
+	}
+}

@@ -1,0 +1,327 @@
+﻿<#@ assembly name="System.Core" #>
+<#@ assembly name="System.Xml" #>
+<#@ assembly name="System.Xml.Linq" #>
+<#@ import namespace="org.ncore.ServicedApi.CodeGenerator.Api" #>
+<#@ import namespace="org.ncore.ServicedApi.CodeGenerator.Api.Model" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.IO" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Xml" #>
+<#@ import namespace="System.Xml.Linq" #>
+<#@ import namespace="org.ncore.Common" #>
+<#
+	ServicedApiModel model = ( (org.ncore.ServicedApi.CodeGenerator.T4Templating.TemplatingHost)Host ).Model;
+#>
+<#@ include file="Header.generated.cs.t4" #>
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Xml.Linq;
+using System.Reflection;
+using System.Text;
+using System.Transactions;
+using org.ncore.Common;
+using org.ncore.Diagnostics;
+using org.ncore.ServicedApi;
+using org.ncore.ServicedApi.Container;
+using org.ncore.ServicedApi.Exceptions;
+using org.ncore.ServicedApi.Persistence;
+using <#=model.Namespace#>.Api;
+using <#=model.Namespace#>.Api.Services;
+using <#=model.Namespace#>.Api.Silos;
+using <#=model.Namespace#>.Orm.Fake.Silos;
+using <#=model.Namespace#>.Orm.Fake.Stores;
+
+namespace <#=model.Namespace#>.Orm.Fake
+{
+    public partial class FakeDataContext : IDataContext, IDisposable
+    {
+	    // NOTE: The following is for diagnostic purposes only.  Allows XML serialization
+        //  of the ObjectStore's contents to a file.  E.g.:
+        //      FakeDataContext.SaveObjectStoreToXml( "c:/ObjectStore.xml" );
+        //  saves the entire contents of the current ObjectStore to c:\ObjectStore.xml
+	    public static void SaveObjectStoreToXml( string fileName )
+        {
+            ObjectStore target = FakeDataContext.ObjectStore;
+
+            var serializer = new DataContractSerializer( target.GetType() );
+            using( var writer = new FileStream( fileName, FileMode.Create ) )
+            {
+                serializer.WriteObject( writer, target );
+            }
+        }
+
+		// NOTE: The following is for diagnostic purposes only.  Allows binary serialization
+		//	and deserialization of the ObjectStore's contents to a file.
+        public static void SerializeObjectStore( string fileName )
+        {
+            IFormatter formatter = new BinaryFormatter();
+            Stream stream = new FileStream( fileName, FileMode.Create, FileAccess.Write, FileShare.None );
+            formatter.Serialize( stream, FakeDataContext.ObjectStore );
+            stream.Close();
+        }
+		
+		public static void DeserializeObjectStore( string fileName )
+        {
+            IFormatter formatter = new BinaryFormatter();
+            Stream stream = new FileStream( fileName, FileMode.Open, FileAccess.Read, FileShare.Read );
+            FakeDataContext.ObjectStore = (ObjectStore)formatter.Deserialize( stream );
+            stream.Close();
+        }
+
+        private const string OBJECTSTORE_STORAGE_KEY = "<#=model.Namespace#>.Orm.Fake.ObjectStore";
+        public static ObjectStore ObjectStore
+        {
+            get
+            {
+                return (ObjectStore)ContextStorage.Current[ OBJECTSTORE_STORAGE_KEY ];
+            }
+            set
+            {
+                ContextStorage.Current[ OBJECTSTORE_STORAGE_KEY ] = value;
+            }
+        }
+
+<#
+foreach( ServiceModel service in model.Services.Values )
+{
+#>
+        public Dictionary< <#=service.IdentifierProperty.Type#>, StoreTypes.<#=service.Name#>>.ValueCollection <#=service.PluralName#>
+        {
+            get
+            {
+                return FakeDataContext.ObjectStore.<#=service.PluralName#>.Items;
+            }
+        }
+
+<#
+}
+#>	
+
+<#
+foreach( FactypeModel factype in model.Factypes.Values )
+{
+#>
+        public Dictionary< System.String, StoreTypes.<#=factype.Name#>>.ValueCollection <#=factype.PluralName#>
+        {
+            get
+            {
+                return FakeDataContext.ObjectStore.<#=factype.PluralName#>.Items;
+            }
+        }
+
+<#
+}
+#>
+
+        private System.Transactions.IsolationLevel _transactionIsolationLevel = System.Transactions.IsolationLevel.ReadCommitted;
+        
+		public Dictionary<Type, Type> SiloMappings;
+		
+        public FakeDataContext()
+        {
+            if( FakeDataContext.ObjectStore == null )
+            {
+                FakeDataContext.ObjectStore = new ObjectStore();
+            }
+			
+            _before_initialize();
+			_initialize();
+            _after_initialize();
+        }
+		
+        partial void _before_initialize();
+        partial void _after_initialize();
+        private void _initialize()
+        {
+            SiloMappings = new Dictionary<Type, Type>();
+<#
+foreach( ServiceModel service in model.Services.Values )
+{
+#>
+            SiloMappings.Add( typeof( I<#=service.Name#>Silo ), typeof( <#=service.Name#>Silo ) );
+<#
+}
+
+foreach( ViewListModel viewList in model.ViewLists.Values )
+{
+#>
+            SiloMappings.Add( typeof( I<#=viewList.Name#>Silo ), typeof( <#=viewList.Name#>Silo ) );
+<#
+}
+#>
+        }
+		
+        void Current_TransactionCompleted( object sender, TransactionEventArgs e )
+        {
+            Spy.Trace( "Complete the transaction.  Commit == {0}", e.Transaction.TransactionInformation.Status );
+            FakeDataContext.ObjectStore.CompleteTransaction( e.Transaction.TransactionInformation.Status == TransactionStatus.Committed );
+        }
+
+        public TransactionScope GetScope()
+        {
+            return GetScope( TransactionScopeOption.Required );
+        }
+
+        public TransactionScope GetScope( TransactionScopeOption scopeOption )
+        {
+            bool isNew = true;
+            if( Transaction.Current != null )
+            {
+                isNew = false;
+            }
+
+            TransactionScope scope = new TransactionScope(
+                        scopeOption,
+                        new TransactionOptions()
+                        {
+                            IsolationLevel = _transactionIsolationLevel
+                        } );
+
+            if( isNew )
+            {
+                Spy.Trace( "Begin the transaction." );
+                Transaction.Current.TransactionCompleted += new TransactionCompletedEventHandler( Current_TransactionCompleted );
+                FakeDataContext.ObjectStore.BeginTransaction();
+            }
+
+            return scope;
+        }
+
+        public IDataSilo GetSilo<T>() where T : IDataSilo
+        {
+            if( SiloMappings.ContainsKey( typeof( T ) ) )
+            {
+                Type type = SiloMappings[ typeof( T ) ];
+                return (T)Activator.CreateInstance( type );
+            }
+            else
+            {
+                throw new ApplicationException( "Unable to get silo.  Type not known." );
+            }
+        }
+
+        public void Dispose()
+        {
+            
+        }
+    }
+    
+	[Serializable]
+    public partial class ObjectStore : IDisposable
+    {
+        private System.Int64 _nextVersion = 1;
+
+        private System.Boolean _enforceReferentialIntegrity = true;
+        public System.Boolean EnforceReferentialIntegrity
+        {
+            get
+            {
+                return _enforceReferentialIntegrity;
+            }
+
+            set
+            {
+                _enforceReferentialIntegrity = value;
+            }
+        }
+
+<#
+foreach( ServiceModel service in model.Services.Values )
+{
+#>
+		public <#=service.Name#>Store <#=service.PluralName#>;
+<#
+}
+#>
+<#
+foreach( FactypeModel factype in model.Factypes.Values )
+{
+#>
+		public <#=factype.Name#>Store <#=factype.PluralName#>;
+<#
+}
+#>
+
+        public ObjectStore()
+        {
+<#
+foreach( ServiceModel service in model.Services.Values )
+{
+#>
+			<#=service.PluralName#> = new <#=service.Name#>Store( this );
+<#
+}
+#>
+<#
+foreach( FactypeModel factype in model.Factypes.Values )
+{
+#>
+			<#=factype.PluralName#> = new <#=factype.Name#>Store( this );
+<#
+}
+#>	
+        }
+
+        public System.Byte[] GetNextVersion()
+        {
+            System.Int64 value = _nextVersion;
+            _nextVersion++;
+            return BitConverter.GetBytes( value );
+        }
+        
+        public void BeginTransaction()
+        {
+            Spy.Trace( "BeginTransaction()" );
+<#
+foreach( ServiceModel service in model.Services.Values )
+{
+#>
+			this.<#=service.PluralName#>.BeginTransaction();
+<#
+}
+#>
+<#
+foreach( FactypeModel factype in model.Factypes.Values )
+{
+#>
+			this.<#=factype.PluralName#>.BeginTransaction();
+<#
+}
+#>
+        }
+
+        public void CompleteTransaction( System.Boolean commit )
+        {
+            Spy.Trace( "CompleteTransaction( commit: {0} )", commit );
+<#
+foreach( ServiceModel service in model.Services.Values )
+{
+#>
+            this.<#=service.PluralName#>.CompleteTransaction( commit );
+<#
+}
+#>
+<#
+foreach( FactypeModel factype in model.Factypes.Values )
+{
+#>
+            this.<#=factype.PluralName#>.CompleteTransaction( commit );
+<#
+}
+#>
+        }
+
+        public void Dispose()
+        {
+            FakeDataContext.ObjectStore = null;
+        }
+    }
+}
+

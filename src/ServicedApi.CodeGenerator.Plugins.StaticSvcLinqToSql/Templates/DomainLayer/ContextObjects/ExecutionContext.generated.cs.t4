@@ -1,0 +1,59 @@
+﻿<#@ assembly name="System.Core" #>
+<#@ assembly name="System.Xml" #>
+<#@ assembly name="System.Xml.Linq" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.IO" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Xml" #>
+<#@ import namespace="System.Xml.Linq" #>
+<#@ import namespace="org.ncore.Common" #>
+<#@ import namespace="org.ncore.ServicedApi.CodeGenerator.T4Templating" #>
+<#@ import namespace="org.ncore.ServicedApi.CodeGenerator.Api" #>
+<#@ import namespace="org.ncore.ServicedApi.CodeGenerator.Api.Model" #>
+<#
+	ServicedApiModel model = ((org.ncore.ServicedApi.CodeGenerator.T4Templating.TemplatingHost)Host).Model;
+#>
+<#@ include file="Header.generated.cs.t4" #>
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using <#=model.Namespace#>.Api.Security;
+using org.ncore.ServicedApi;
+using org.ncore.ServicedApi.Exceptions;
+
+namespace <#=model.Namespace#>.Api
+{
+    public partial class ExecutionContext : IDisposable
+    {
+        private const string STORAGE_KEY = "<#=model.Namespace#>.Api.ExecutionContext";
+
+        public static ExecutionContext Current
+        {
+            get
+            {
+                return (ExecutionContext)ContextStorage.Current[ STORAGE_KEY ];
+            }
+            set
+            {
+                ContextStorage.Current[ STORAGE_KEY ] = value;
+            }
+        }
+
+        public ServiceUser User { get; private set; }
+        public Dictionary<string, Object> Cache { get; private set; }
+
+        public ExecutionContext( ServiceUser user )
+        {
+            this.User = user;
+            this.Cache = new Dictionary<string, object>();
+        }
+
+        public void Dispose()
+        {
+            this.User = null;
+            this.Cache = null;
+        }
+    }
+}

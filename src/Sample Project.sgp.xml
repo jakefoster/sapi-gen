@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <Configuration>
+    <ServicedApiXmlFileLocation>C:\dev\cbx\!SAPI\default\ServicedApi.CodeGenerator\src\Mkx.Programs.Tmi.ServicedApi.xml</ServicedApiXmlFileLocation>
+    <OutputRootPath>C:\dev\cbx\!SAPI\default\ServicedApiGen\output</OutputRootPath>
+    <GeneratorPlugin>
+      <Name>org.ncore.ServicedApi.CodeGenerator.Plugins.StaticSvcLinqToSql.Generator</Name>
+      <PluginSettings>
+        <Settings xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+          <DoNotGenerateStarters>false</DoNotGenerateStarters>
+          <NameOfGeneratedFolder>_generated</NameOfGeneratedFolder>
+          <NameOfStartersFolder>_starters</NameOfStartersFolder>
+          <TargetFrameworkVersion>dotNet_4_0</TargetFrameworkVersion>
+        </Settings>
+      </PluginSettings>
+    </GeneratorPlugin>
+  </Configuration>
+</Project>

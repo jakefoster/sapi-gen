@@ -1,0 +1,148 @@
+﻿<#@ assembly name="System.Core" #>
+<#@ assembly name="System.Xml" #>
+<#@ assembly name="System.Xml.Linq" #>
+<#@ import namespace="org.ncore.ServicedApi.CodeGenerator.Api" #>
+<#@ import namespace="org.ncore.ServicedApi.CodeGenerator.Api.Model" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.IO" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Xml" #>
+<#@ import namespace="System.Xml.Linq" #>
+<#@ import namespace="org.ncore.Common" #>
+<#
+ServicedApiModel model = ( (org.ncore.ServicedApi.CodeGenerator.T4Templating.TemplatingHost)Host ).Model;
+string serviceName = Host.ResolveParameterValue( null, null, "TargetObjectName" );
+ServiceModel service = model.Services[ serviceName ];
+#>
+<#@ include file="Header.starter.cs.t4" #>
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Transactions;
+using org.ncore.Common;
+using org.ncore.Extensions;
+using org.ncore.ServicedApi;
+using org.ncore.ServicedApi.Container;
+using org.ncore.ServicedApi.Persistence;
+using <#=model.Namespace#>.Api.Silos;
+
+namespace <#=model.Namespace#>.Api.Services
+{
+    public partial class <#=service.Name#>
+    {
+<#	
+	if( service.CreateOperation != null && service.CreateOperation.Visibility.Precedence >= VisibilityFactype.Internal.Precedence )
+	{
+#>
+		//partial void _beforeCreate();
+        //partial void _afterCreate();
+<#		
+	}
+	
+	if( service.CreateOperation != null )
+	{
+		if( service.Attributes.Keys.Contains( "CreatedDateTime" ) || service.Attributes.Keys.Contains( "UpdatedDateTime" ) )
+		{
+#>
+		partial void _beforePrivateCreate()
+		{
+			DateTime timestamp = DateTime.UtcNow;
+<#
+			if( service.Attributes.Keys.Contains( "CreatedDateTime" ) )
+			{
+#>
+            this._CreatedDateTime = timestamp;
+<#
+			}
+			if( service.Attributes.Keys.Contains( "UpdatedDateTime" ) )
+			{
+#>
+            this._UpdatedDateTime = timestamp;
+<#
+			}
+#>
+		}
+<#
+		}
+		else
+		{
+#>
+		//partial void _beforePrivateCreate();
+<#
+		}
+#>
+		//partial void _afterPrivateCreate();
+<#
+	}
+#>
+        
+<#
+	
+	if( service.ReadOperation != null && service.ReadOperation.Visibility.Precedence >= VisibilityFactype.Internal.Precedence )
+	{
+#>
+		//partial static void _beforeRead( int id );
+		//partial static void _afterRead( int id );
+<#
+	}
+	
+	if( service.ReadOperation != null )
+	{
+#>
+		//partial static void _beforePrivateRead( int id );
+		//partial static void _afterPrivateRead( int id );
+<#
+	}
+	
+	if( service.UpdateOperation != null && service.UpdateOperation.Visibility.Precedence >= VisibilityFactype.Internal.Precedence )
+	{
+#>
+		//partial void _beforeUpdate();
+        //partial void _afterUpdate();
+<#
+	}
+	
+	if( service.UpdateOperation != null )
+	{	
+		if( service.Attributes.Keys.Contains( "UpdatedDateTime" ) )
+		{
+#>
+		partial void _beforePrivateUpdate()
+		{
+			DateTime timestamp = DateTime.UtcNow;
+            this._UpdatedDateTime = timestamp;
+		}
+<#
+		}
+		else
+		{
+#>
+		//partial void _beforePrivateUpdate();
+<#
+		}
+#>
+        //partial void _afterPrivateUpdate();
+<#
+	}
+	if( service.DeleteOperation != null && service.DeleteOperation.Visibility.Precedence >= VisibilityFactype.Internal.Precedence )
+	{
+#>
+		//partial static void _beforeDelete( <#=service.IdentifierProperty.Type#> <#=service.IdentifierProperty.Name.ToInternalName()#> );
+		//partial static void _afterDelete( <#=service.IdentifierProperty.Type#> <#=service.IdentifierProperty.Name.ToInternalName()#> );
+<#
+	}
+	
+	// TODO: Implementation for protected method?  JF
+	
+	if( service.DeleteOperation != null )
+	{
+#>
+		//partial static void _beforePrivateDelete( <#=service.IdentifierProperty.Type#> <#=service.IdentifierProperty.Name.ToInternalName()#> );
+		//partial static void _afterPrivateDelete( <#=service.IdentifierProperty.Type#> <#=service.IdentifierProperty.Name.ToInternalName()#> );
+<#
+	}		
+#>
+    }
+}

@@ -1,0 +1,94 @@
+﻿<#@ assembly name="System.Core" #>
+<#@ assembly name="System.Xml" #>
+<#@ assembly name="System.Xml.Linq" #>
+<#@ import namespace="org.ncore.ServicedApi.CodeGenerator.Api" #>
+<#@ import namespace="org.ncore.ServicedApi.CodeGenerator.Api.Model" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.IO" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Xml" #>
+<#@ import namespace="System.Xml.Linq" #>
+<#
+ServicedApiModel model = ( (org.ncore.ServicedApi.CodeGenerator.T4Templating.TemplatingHost)Host ).Model;
+string factypeName = Host.ResolveParameterValue( null, null, "TargetObjectName" );
+FactypeModel factype = model.Factypes[ factypeName ];
+#>
+<#@ include file="Header.starter.cs.t4" #>
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using <#=model.Namespace#>.Api;
+using <#=model.Namespace#>.Api.Services;
+using <#=model.Namespace#>.Api.Security;
+using <#=model.Namespace#>.Orm.Fake;
+using Entities = <#=model.Namespace#>.Orm.Fake.Entities;
+using org.ncore.Common;
+using org.ncore.ServicedApi;
+
+namespace _unittests.<#=model.Namespace#>.Api.Services
+{
+    /// <summary>
+    /// Summary description for <#=factype.Name#>Tests
+    /// </summary>
+    [TestClass]
+    public class <#=factype.Name#>Tests
+    {
+        public <#=factype.Name#>Tests()
+        {
+            //
+            // TODO: Add constructor logic here
+            //
+        }
+
+        private TestContext testContextInstance;
+
+        /// <summary>
+        ///Gets or sets the test context which provides
+        ///information about and functionality for the current test run.
+        ///</summary>
+        public TestContext TestContext
+        {
+            get
+            {
+                return testContextInstance;
+            }
+            set
+            {
+                testContextInstance = value;
+            }
+        }
+
+        #region Additional test attributes
+        //
+        // You can use the following additional attributes as you write your tests:
+        //
+        // Use ClassInitialize to run code before running the first test in the class
+        // [ClassInitialize()]
+        // public static void MyClassInitialize(TestContext testContext) { }
+        //
+        // Use ClassCleanup to run code after all tests in a class have run
+        // [ClassCleanup()]
+        // public static void MyClassCleanup() { }
+        //
+        // Use TestInitialize to run code before running each test 
+        // [TestInitialize()]
+        // public void MyTestInitialize() { }
+        //
+        // Use TestCleanup to run code after each test has run
+        // [TestCleanup()]
+        // public void MyTestCleanup() { }
+        //
+        #endregion
+
+        [TestMethod]
+        public void TestMethod1()
+        {
+            //
+            // TODO: Add test logic	here
+            //
+        }
+    }
+}

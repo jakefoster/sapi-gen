@@ -1,0 +1,128 @@
+﻿<#@ assembly name="System.Core" #>
+<#@ assembly name="System.Xml" #>
+<#@ assembly name="System.Xml.Linq" #>
+<#@ import namespace="org.ncore.ServicedApi.CodeGenerator.Api" #>
+<#@ import namespace="org.ncore.ServicedApi.CodeGenerator.Api.Model" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.IO" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Xml" #>
+<#@ import namespace="System.Xml.Linq" #>
+<#@ import namespace="org.ncore.Common" #>
+<#
+	ServicedApiModel model = ( (org.ncore.ServicedApi.CodeGenerator.T4Templating.TemplatingHost)Host ).Model;
+#>
+<#@ include file="Header.generated.cs.t4" #>
+using System;
+using System.Configuration;
+using System.Data;
+using System.Data.Common;
+using System.Collections.Generic;
+using System.Linq;
+using System.Data.Linq;
+using System.Data.Linq.Mapping;
+using System.Text;
+using System.Transactions;
+using System.Reflection;
+using org.ncore.ServicedApi;
+using org.ncore.ServicedApi.Persistence;
+using <#=model.Namespace#>.Api;
+using <#=model.Namespace#>.Api.Silos;
+using <#=model.Namespace#>.Orm.LinqToSql.Silos;
+
+namespace <#=model.Namespace#>.Orm.LinqToSql
+{
+    public partial class OrmDataContext : IDataContext, IDisposable
+    {
+        // TODO: Getter/Setter so external caller can set this?  Why would we want to let them do that?  JF
+        private System.Transactions.IsolationLevel _transactionIsolationLevel = System.Transactions.IsolationLevel.ReadCommitted;
+        private TransactionScope _rootTransactionScope = null;
+
+		public Dictionary<Type, Type> SiloMappings;
+
+        partial void OnCreated()
+        {
+            if( ConfigurationManager.ConnectionStrings[ "<#=model.Namespace#>.Orm.LinqToSql/OrmDataContext.ConnectionString" ] != null )
+            {
+                this.Connection.ConnectionString = ConfigurationManager.ConnectionStrings[ "<#=model.Namespace#>.Orm.LinqToSql/OrmDataContext.ConnectionString" ].ConnectionString;
+            }
+
+            _rootTransactionScope = this.GetScope( TransactionScopeOption.RequiresNew );
+			
+            _before_initialize();
+			_initialize();
+            _after_initialize();
+        }
+
+        partial void _before_initialize();
+        partial void _after_initialize();
+        private void _initialize()
+        {
+            SiloMappings = new Dictionary<Type, Type>();
+<#
+foreach( ServiceModel service in model.Services.Values )
+{
+#>
+            SiloMappings.Add( typeof( I<#=service.Name#>Silo ), typeof( <#=service.Name#>Silo ) );
+<#
+}
+
+foreach( ViewListModel viewList in model.ViewLists.Values )
+{
+#>
+            SiloMappings.Add( typeof( I<#=viewList.Name#>Silo ), typeof( <#=viewList.Name#>Silo ) );
+<#
+}
+#>
+        }
+		
+        public TransactionScope GetScope()
+        {
+            return GetScope( TransactionScopeOption.Required );
+        }
+
+        public TransactionScope GetScope( TransactionScopeOption scopeOption )
+        {
+            return new TransactionScope(
+                        scopeOption,
+                        new TransactionOptions()
+                        {
+                            IsolationLevel = _transactionIsolationLevel
+                        } );
+        }
+
+        public void SaveChanges()
+        {
+            this.SubmitChanges();
+        }
+
+        public IDataSilo GetSilo<T>() where T : IDataSilo
+        {
+            if( SiloMappings.ContainsKey( typeof( T ) ) )
+            {
+                Type type = SiloMappings[ typeof( T ) ];
+                return (T)Activator.CreateInstance( type );
+            }
+            else
+            {
+                throw new ApplicationException( "Unable to get silo.  Type not known." );
+            }
+        }
+
+        void IDisposable.Dispose()
+        {
+            if( _rootTransactionScope != null )
+            {
+                if( System.Transactions.Transaction.Current.TransactionInformation.Status != TransactionStatus.Aborted )
+                {
+                    _rootTransactionScope.Complete();
+                }
+                _rootTransactionScope.Dispose();
+                _rootTransactionScope = null;
+            }
+
+            base.Dispose();
+        }
+    }
+}

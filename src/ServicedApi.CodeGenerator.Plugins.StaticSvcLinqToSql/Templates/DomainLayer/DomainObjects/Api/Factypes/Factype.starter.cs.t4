@@ -1,0 +1,64 @@
+﻿<#@ assembly name="System.Core" #>
+<#@ assembly name="System.Xml" #>
+<#@ assembly name="System.Xml.Linq" #>
+<#@ import namespace="org.ncore.ServicedApi.CodeGenerator.Api" #>
+<#@ import namespace="org.ncore.ServicedApi.CodeGenerator.Api.Model" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.IO" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Xml" #>
+<#@ import namespace="System.Xml.Linq" #>
+<#@ import namespace="org.ncore.Common" #>
+<#
+ServicedApiModel model = ( (org.ncore.ServicedApi.CodeGenerator.T4Templating.TemplatingHost)Host ).Model;
+string factypeName = Host.ResolveParameterValue( null, null, "TargetObjectName" );
+FactypeModel factype = model.Factypes[ factypeName ];
+
+string constructorParams = string.Empty;
+if( factype.Attributes.Count > 0 )
+{
+	StringBuilder builder = new StringBuilder();
+	builder.Append( " " );
+
+	int current = 1;
+	foreach( FactypeAttributeModel property in factype.Attributes.Values )
+	{
+		builder.Append( property.Name.ToUpper() );
+		builder.Append( "_VALUE" );
+		if( current < factype.Attributes.Count )
+		{
+			builder.Append( ", " );
+		}
+		current++;
+	}
+	
+	builder.Append( " " );
+
+	constructorParams = builder.ToString();
+}
+
+string baseType = "Factype";
+if( factype.IsKeyed )
+{
+	baseType = String.Format( "KeyedFactype<{0}>", factype.KeyProperty.Type );
+}
+#>
+<#@ include file="Header.starter.cs.t4" #>
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Transactions;
+using org.ncore.Common;
+using org.ncore.Extensions;
+using org.ncore.ServicedApi;
+using org.ncore.ServicedApi.Container;
+
+namespace <#=model.Namespace#>.Api.Services
+{
+    public partial class <#=factype.Name#> : <#=baseType#>
+    {
+        //public static readonly <#=factype.Name#> MONIKER = new <#=factype.Name#>(<#=constructorParams#>);
+	}
+}

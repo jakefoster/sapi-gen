@@ -1,0 +1,225 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{6919FE5F-130F-4748-88DE-B376B4DC9D46}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>org.ncore.ServicedApi.CodeGenerator.Plugins.StaticSvcLinqToSql</RootNamespace>
+    <AssemblyName>org.ncore.ServicedApi.CodeGenerator.Plugins.StaticSvcLinqToSql</AssemblyName>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RunPostBuildEvent>Always</RunPostBuildEvent>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.VisualStudio.TextTemplating, Version=9.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\Windows\assembly\GAC_MSIL\Microsoft.VisualStudio.TextTemplating\9.0.0.0__b03f5f7f11d50a3a\Microsoft.VisualStudio.TextTemplating.dll</HintPath>
+    </Reference>
+    <Reference Include="org.ncore, Version=1.7.5.242, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\ncore-foundation.1.7.5.242\lib\net452\org.ncore.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Generator.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Settings.cs" />
+    <Compile Include="SettingsForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SettingsForm.Designer.cs">
+      <DependentUpon>SettingsForm.cs</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ServicedApi.CodeGenerator.Api\ServicedApi.CodeGenerator.Api.csproj">
+      <Project>{E66EB667-566A-465C-9799-9942CAEA0D81}</Project>
+      <Name>ServicedApi.CodeGenerator.Api</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ServicedApi.CodeGenerator.T4Templating\ServicedApi.CodeGenerator.T4Templating.csproj">
+      <Project>{7DA4C6E0-8B3F-4AE0-B2ED-E6A8298437A2}</Project>
+      <Name>ServicedApi.CodeGenerator.T4Templating</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ServicedApi.CodeGenerator\ServicedApi.CodeGenerator.csproj">
+      <Project>{8B0104BB-29B7-48F5-9447-D1EA68190A5E}</Project>
+      <Name>ServicedApi.CodeGenerator</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="SettingsForm.resx">
+      <DependentUpon>SettingsForm.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Templates\DomainLayer\ContextObjects\ExecutionContext.generated.cs.t4">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Templates\DomainLayer\ContextObjects\ExecutionContext.starter.cs.t4">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Templates\DomainLayer\DomainObjects\Api\Factypes\Factype.generated.cs.t4">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Templates\DomainLayer\DomainObjects\Api\Factypes\Factype.starter.cs.t4">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Templates\DomainLayer\DomainObjects\Api\ServiceObjects\ServiceObject.generated.cs.t4">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Templates\DomainLayer\DomainObjects\Api\ServiceObjects\ServiceObject.starter.cs.t4">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Templates\DomainLayer\DomainObjects\Api\ServiceObjects\ISilo.generated.cs.t4">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Templates\DomainLayer\DomainObjects\Api\ServiceObjects\ISilo.starter.cs.t4">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Templates\DomainLayer\DomainObjects\SystemTests\Factypes\Tests.starter.cs.t4">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Templates\DomainLayer\DomainObjects\SystemTests\ServiceObjects\Tests.starter.cs.t4">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Templates\DomainLayer\DomainObjects\UnitTests\Factypes\Tests.starter.cs.t4">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Templates\DomainLayer\DomainObjects\UnitTests\ServiceObjects\Tests.starter.cs.t4">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Templates\DomainLayer\DomainObjects\Api\ViewLists\ISilo.starter.cs.t4">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Templates\DomainLayer\DomainObjects\Api\ViewLists\ViewList.starter.cs.t4">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Templates\DomainLayer\DomainObjects\Api\ViewLists\ViewList.generated.cs.t4">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Templates\OrmLayer\FakeOrm\StoreTypes\Factype.generated.cs.t4">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Templates\OrmLayer\FakeOrm\StoreTypes\Factype.starter.cs.t4">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Templates\OrmLayer\FakeOrm\StoreTypes\ServiceObject.generated.cs.t4">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Templates\OrmLayer\FakeOrm\StoreTypes\ServiceObject.starter.cs.t4">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Templates\OrmLayer\FakeOrm\Silos\ServiceObjectSilo.generated.cs.t4">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Templates\OrmLayer\FakeOrm\Silos\ServiceObjectSilo.starter.cs.t4">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Templates\OrmLayer\FakeOrm\Stores\Factype.generated.cs.t4">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Templates\OrmLayer\FakeOrm\Stores\Factype.starter.cs.t4">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Templates\OrmLayer\FakeOrm\Stores\ServiceObject.generated.cs.t4">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Templates\OrmLayer\FakeOrm\Stores\ServiceObject.starter.cs.t4">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Templates\OrmLayer\LinqToSqlOrm\Silos\ServiceObjectSilo.generated.cs.t4">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Templates\OrmLayer\LinqToSqlOrm\Silos\ServiceObjectSilo.starter.cs.t4">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Templates\OrmLayer\FakeOrm\ContextObjects\FakeDataContext.generated.cs.t4">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Templates\OrmLayer\FakeOrm\ContextObjects\FakeDataContext.starter.cs.t4">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Templates\DomainLayer\DomainObjects\SystemTests\ViewLists\Tests.starter.cs.t4">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Templates\DomainLayer\DomainObjects\UnitTests\ViewLists\Tests.starter.cs.t4">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Templates\OrmLayer\FakeOrm\Silos\ViewListSilo.generated.cs.t4">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Templates\OrmLayer\FakeOrm\Silos\ViewListSilo.starter.cs.t4">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Templates\OrmLayer\LinqToSqlOrm\Silos\ViewListSilo.generated.cs.t4">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Templates\OrmLayer\LinqToSqlOrm\Silos\ViewListSilo.starter.cs.t4">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Templates\_includes\Header.generated.cs.t4">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Templates\_includes\Header.starter.cs.t4">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Templates\OrmLayer\LinqToSqlOrm\ContextObjects\OrmDataContext.generated.cs.t4">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Templates\OrmLayer\LinqToSqlOrm\ContextObjects\OrmDataContext.starter.cs.t4">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Include="packages.config" />
+    <None Include="_build\PostBuild.cmd" />
+    <None Include="_build\PreBuild.cmd" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>"$(projectdir)_build\PreBuild.cmd"</PreBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PostBuildEvent>"$(projectdir)_build\PostBuild.cmd"</PostBuildEvent>
+  </PropertyGroup>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

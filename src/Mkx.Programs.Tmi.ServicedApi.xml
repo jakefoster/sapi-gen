@@ -1,0 +1,341 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ServicedApi Namespace="Mkx.Programs.Tmi">
+    <Services>
+        <Service Name="CaseCompletionHandlerEvent">
+            <Properties>
+                <Attribute Name="Id" Type="System.Int32" IsIdentifier="true"/> 
+                <Attribute Name="CreatedDateTime" Type="System.DateTime"/> 
+                <Attribute Name="Version" Type="System.Byte[]" IsVersion="true"/> 
+                <Attribute Name="CaseHeaderId" Type="System.Int32"/> 
+                <Attribute Name="CaseCompletionHandlerTypeMoniker" Type="System.String"/> 
+                <Attribute Name="StatusDescriptor" Type="System.String"/> 
+                <Attribute Name="DataTypeDescriptor" Type="System.String"/> 
+                <Attribute Name="Data" Type="System.Xml.Linq.XElement"/> 
+                <ParentReference Name="CaseCompletionHandlerType" ChildKey="CaseCompletionHandlerTypeMoniker" ParentType="CaseCompletionHandlerType" ParentKey="Moniker"/>
+            </Properties>
+            <Operations>
+                <Create Visibility="Public" />
+                <Read Visibility="Public" />
+                <Update Visibility="Public" />
+                <!-- Delete Visibility="Public" / -->
+                <ReadByParent Visibility="Public" Name="ReadByCaseCompletionHandlerType" ParentType="CaseCompletionHandlerType" ChildKey="CaseCompletionHandlerTypeMoniker" ParentKey="Moniker" />
+            </Operations>
+        </Service>
+        <Service Name="WebServiceFault">
+            <Properties>
+                <Attribute Name="Id" Type="System.Int32" IsIdentifier="true"/> 
+                <Attribute Name="CreatedDateTime" Type="System.DateTime"/> 
+                <Attribute Name="ServerName" Type="System.String"/> 
+                <Attribute Name="ServiceName" Type="System.String"/> 
+                <Attribute Name="RouteUrl" Type="System.String"/> 
+                <Attribute Name="Path" Type="System.String"/> 
+                <Attribute Name="ApplicationPath" Type="System.String"/> 
+                <Attribute Name="RelativeExecutionPath" Type="System.String"/> 
+                <Attribute Name="ServerAddress" Type="System.String"/> 
+                <Attribute Name="ClientAddress" Type="System.String"/> 
+                <Attribute Name="HttpMethod" Type="System.String"/> 
+                <Attribute Name="Https" Type="System.Nullable&lt;System.Boolean&gt;"/> 
+                <Attribute Name="HostName" Type="System.String"/> 
+                <Attribute Name="ServerPort" Type="System.Nullable&lt;System.Int32&gt;"/> 
+                <Attribute Name="RawUrl" Type="System.String"/> 
+                <Attribute Name="ExceptionType" Type="System.String"/> 
+                <Attribute Name="ExceptionMessage" Type="System.String"/> 
+                <Attribute Name="ExceptionUserMessage" Type="System.String"/> 
+                <Attribute Name="ExceptionSource" Type="System.String"/> 
+                <Attribute Name="ExceptionTargetSite" Type="System.String"/> 
+                <Attribute Name="FaultKey" Type="System.String"/> 
+                <Attribute Name="Fault" Type="System.Xml.Linq.XElement"/> 
+                <Attribute Name="ServerVariables" Type="System.Xml.Linq.XElement"/> 
+                <Attribute Name="RequestHeaders" Type="System.Xml.Linq.XElement"/> 
+                <Attribute Name="RequestBody" Type="System.String"/> 
+            </Properties>
+            <Operations>
+                <Create Visibility="Public" />
+                <Read Visibility="Public" />
+                <Update Visibility="Public" />
+                <!-- Delete Visibility="Public" / -->
+            </Operations>
+        </Service>
+        <Service Name="CaseHeaderEvent">
+            <Properties>
+                <Attribute Name="Id" Type="System.Int32" IsIdentifier="true"/> 
+                <Attribute Name="CreatedDateTime" Type="System.DateTime"/> 
+                <Attribute Name="Version" Type="System.Byte[]" IsVersion="true"/> 
+                <Attribute Name="CaseHeaderId" Type="System.Int32"/> 
+                <Attribute Name="StatusTypeMoniker" Type="System.String"/> 
+                <Attribute Name="DataTypeMoniker" Type="System.String"/> 
+                <Attribute Name="Data" Type="System.Xml.Linq.XElement"/> 
+                <ParentReference Name="CaseHeader" ChildKey="CaseHeaderId" ParentType="CaseHeader" ParentKey="Id"/>
+                <ParentReference Name="EventDataType" ChildKey="DataTypeMoniker" ParentType="EventDataType" ParentKey="Moniker"/>
+                <ParentReference Name="StatusType" ChildKey="StatusTypeMoniker" ParentType="StatusType" ParentKey="Moniker"/>
+            </Properties>
+            <Operations>
+                <Create Visibility="Public" />
+                <Read Visibility="Public" />
+                <Update Visibility="Public" />
+                <!-- Delete Visibility="Public" / -->
+                    <ReadByParent Visibility="Public" Name="ReadByCaseHeader" ParentType="CaseHeader" ChildKey="CaseHeaderId" ParentKey="Id" />
+                    <ReadParent Visibility="Public" Name="ReadCaseHeader" ParentType="CaseHeader" ChildKey="CaseHeaderId" ParentKey="Id" />
+                    <ReadByParent Visibility="Public" Name="ReadByEventDataType" ParentType="EventDataType" ChildKey="DataTypeMoniker" ParentKey="Moniker" />
+                    <ReadByParent Visibility="Public" Name="ReadByStatusType" ParentType="StatusType" ChildKey="StatusTypeMoniker" ParentKey="Moniker" />
+            </Operations>
+        </Service>
+        <Service Name="MatchingRule">
+            <Properties>
+                <Attribute Name="Id" Type="System.Int32" IsIdentifier="true"/> 
+                <Attribute Name="CreatedDateTime" Type="System.DateTime"/> 
+                <Attribute Name="Version" Type="System.Byte[]" IsVersion="true"/> 
+                <Attribute Name="TaskDefinitionId" Type="System.Int32"/> 
+                <Attribute Name="Ndc" Type="System.String"/> 
+                <Attribute Name="FillNumber" Type="System.Nullable&lt;System.Int32&gt;"/> 
+                <Attribute Name="TargetDrugName" Type="System.String"/> 
+                <ChildReference Name="CaseHeaders" ParentKey="Id" ChildType="CaseHeader" ChildKey="MatchingRuleId"/>
+                <ParentReference Name="TaskDefinition" ChildKey="TaskDefinitionId" ParentType="TaskDefinition" ParentKey="Id"/>
+            </Properties>
+            <Operations>
+                <Create Visibility="Public" />
+                <Read Visibility="Public" />
+                <Update Visibility="Public" />
+                <!-- Delete Visibility="Public" / -->
+                <ReadChildren Visibility="Public" Name="ReadCaseHeaders" ChildType="CaseHeader" ChildKey="MatchingRuleId" ParentKey="Id" ChildOperation="ReadByMatchingRule"/>
+                    <ReadByParent Visibility="Public" Name="ReadByTaskDefinition" ParentType="TaskDefinition" ChildKey="TaskDefinitionId" ParentKey="Id" />
+                    <ReadParent Visibility="Public" Name="ReadTaskDefinition" ParentType="TaskDefinition" ChildKey="TaskDefinitionId" ParentKey="Id" />
+            </Operations>
+        </Service>
+        <Service Name="Patient">
+            <Properties>
+                <Attribute Name="Id" Type="System.Int32" IsIdentifier="true"/> 
+                <Attribute Name="CreatedDateTime" Type="System.DateTime"/> 
+                <Attribute Name="Version" Type="System.Byte[]" IsVersion="true"/> 
+                <Attribute Name="DrxPatientId" Type="System.Int32"/> 
+                <ChildReference Name="CaseHeaders" ParentKey="Id" ChildType="CaseHeader" ChildKey="PatientId"/>
+            </Properties>
+            <Operations>
+                <Create Visibility="Public" />
+                <Read Visibility="Public" />
+                <Update Visibility="Public" />
+                <!-- Delete Visibility="Public" / -->
+                <ReadChildren Visibility="Public" Name="ReadCaseHeaders" ChildType="CaseHeader" ChildKey="PatientId" ParentKey="Id" ChildOperation="ReadByPatient"/>
+            </Operations>
+        </Service>
+        <Service Name="CaseHeader">
+            <Properties>
+                <Attribute Name="Id" Type="System.Int32" IsIdentifier="true"/> 
+                <Attribute Name="CreatedDateTime" Type="System.DateTime"/> 
+                <Attribute Name="UpdatedDateTime" Type="System.DateTime"/> 
+                <Attribute Name="Version" Type="System.Byte[]" IsVersion="true"/> 
+                <Attribute Name="MkxPharmacyId" Type="System.Int32"/> 
+                <Attribute Name="PharmacyChainCode" Type="System.String"/> 
+                <Attribute Name="PatientId" Type="System.Int32"/> 
+                <Attribute Name="TaskDefinitionId" Type="System.Int32"/> 
+                <Attribute Name="MatchingRuleId" Type="System.Int32"/> 
+                <Attribute Name="CaseCompletionHandlerTypeMoniker" Type="System.String"/> 
+                <Attribute Name="PatientServiceRequest" Type="System.Xml.Linq.XElement"/> 
+                <Attribute Name="PatientServiceResponse" Type="System.Xml.Linq.XElement"/> 
+                <Attribute Name="StatusTypeMoniker" Type="System.String"/> 
+                <Attribute Name="LastHandlerMoniker" Type="System.String"/> 
+                <Attribute Name="LastHandlerEventStatusDescriptor" Type="System.String"/> 
+                <Attribute Name="TaskGuid" Type="System.Nullable&lt;System.Guid&gt;"/> 
+                <ChildReference Name="CaseHeaderEvents" ParentKey="Id" ChildType="CaseHeaderEvent" ChildKey="CaseHeaderId"/>
+                <ChildReference Name="MedicationFills" ParentKey="Id" ChildType="MedicationFill" ChildKey="CaseHeaderId"/>
+                <ParentReference Name="CaseCompletionHandlerType" ChildKey="CaseCompletionHandlerTypeMoniker" ParentType="CaseCompletionHandlerType" ParentKey="Moniker"/>
+                <ParentReference Name="LastHandlerType" ChildKey="LastHandlerMoniker" ParentType="CaseCompletionHandlerType" ParentKey="Moniker"/>
+                <ParentReference Name="MatchingRule" ChildKey="MatchingRuleId" ParentType="MatchingRule" ParentKey="Id"/>
+                <ParentReference Name="Patient" ChildKey="PatientId" ParentType="Patient" ParentKey="Id"/>
+                <ParentReference Name="StatusType" ChildKey="StatusTypeMoniker" ParentType="StatusType" ParentKey="Moniker"/>
+                <ParentReference Name="TaskDefinition" ChildKey="TaskDefinitionId" ParentType="TaskDefinition" ParentKey="Id"/>
+            </Properties>
+            <Operations>
+                <Create Visibility="Public" />
+                <Read Visibility="Public" />
+                <Update Visibility="Public" />
+                <!-- Delete Visibility="Public" / -->
+                <ReadChildren Visibility="Public" Name="ReadCaseHeaderEvents" ChildType="CaseHeaderEvent" ChildKey="CaseHeaderId" ParentKey="Id" ChildOperation="ReadByCaseHeader"/>
+                <ReadChildren Visibility="Public" Name="ReadMedicationFills" ChildType="MedicationFill" ChildKey="CaseHeaderId" ParentKey="Id" ChildOperation="ReadByCaseHeader"/>
+                <ReadByParent Visibility="Public" Name="ReadByCaseCompletionHandlerType" ParentType="CaseCompletionHandlerType" ChildKey="CaseCompletionHandlerTypeMoniker" ParentKey="Moniker" />
+                <ReadByParent Visibility="Public" Name="ReadByLastHandlerType" ParentType="CaseCompletionHandlerType" ChildKey="LastHandlerMoniker" ParentKey="Moniker" />
+                    <ReadByParent Visibility="Public" Name="ReadByMatchingRule" ParentType="MatchingRule" ChildKey="MatchingRuleId" ParentKey="Id" />
+                    <ReadParent Visibility="Public" Name="ReadMatchingRule" ParentType="MatchingRule" ChildKey="MatchingRuleId" ParentKey="Id" />
+                <ReadByParent Visibility="Public" Name="ReadByPatient" ParentType="Patient" ChildKey="PatientId" ParentKey="Id" />
+                <ReadParent Visibility="Public" Name="ReadPatient" ParentType="Patient" ChildKey="PatientId" ParentKey="Id" />
+                <ReadByParent Visibility="Public" Name="ReadByStatusType" ParentType="StatusType" ChildKey="StatusTypeMoniker" ParentKey="Moniker" />
+                <ReadByParent Visibility="Public" Name="ReadByTaskDefinition" ParentType="TaskDefinition" ChildKey="TaskDefinitionId" ParentKey="Id" />
+                <ReadParent Visibility="Public" Name="ReadTaskDefinition" ParentType="TaskDefinition" ChildKey="TaskDefinitionId" ParentKey="Id" />
+            </Operations>
+        </Service>
+        <Service Name="TaskDefinition">
+            <Properties>
+                <Attribute Name="Id" Type="System.Int32" IsIdentifier="true"/> 
+                <Attribute Name="CreatedDateTime" Type="System.DateTime"/> 
+                <Attribute Name="Version" Type="System.Byte[]" IsVersion="true"/> 
+                <Attribute Name="Description" Type="System.String"/> 
+                <Attribute Name="MkxSponsorMoniker" Type="System.String"/> 
+                <Attribute Name="MkxProgramMoniker" Type="System.String"/> 
+                <Attribute Name="MkxProgramGuid" Type="System.Guid"/> 
+                <Attribute Name="MkxTaskName" Type="System.String"/> 
+                <Attribute Name="MkxTaskDefinitionGuid" Type="System.Guid"/> 
+                <Attribute Name="PaymentGuidance" Type="System.String"/> 
+                <Attribute Name="StartDate" Type="System.Nullable&lt;System.DateTime&gt;"/> 
+                <Attribute Name="EndDate" Type="System.Nullable&lt;System.DateTime&gt;"/> 
+                <Attribute Name="CaseCompletionHandlerTypeMoniker" Type="System.String"/> 
+                <Attribute Name="TargetDrugName" Type="System.String"/> 
+                <ChildReference Name="CaseHeaders" ParentKey="Id" ChildType="CaseHeader" ChildKey="TaskDefinitionId"/>
+                <ChildReference Name="MatchingRules" ParentKey="Id" ChildType="MatchingRule" ChildKey="TaskDefinitionId"/>
+                <ParentReference Name="CaseCompletionHandlerType" ChildKey="CaseCompletionHandlerTypeMoniker" ParentType="CaseCompletionHandlerType" ParentKey="Moniker"/>
+            </Properties>
+            <Operations>
+                <Create Visibility="Public" />
+                <Read Visibility="Public" />
+                <Update Visibility="Public" />
+                <!-- Delete Visibility="Public" / -->
+                <ReadChildren Visibility="Public" Name="ReadCaseHeaders" ChildType="CaseHeader" ChildKey="TaskDefinitionId" ParentKey="Id" ChildOperation="ReadByTaskDefinition"/>
+                <ReadChildren Visibility="Public" Name="ReadMatchingRules" ChildType="MatchingRule" ChildKey="TaskDefinitionId" ParentKey="Id" ChildOperation="ReadByTaskDefinition"/>
+                <ReadByParent Visibility="Public" Name="ReadByCaseCompletionHandlerType" ParentType="CaseCompletionHandlerType" ChildKey="CaseCompletionHandlerTypeMoniker" ParentKey="Moniker" />
+            </Operations>
+        </Service>
+        <Service Name="MedicationFill">
+            <Properties>
+                <Attribute Name="Id" Type="System.Int32" IsIdentifier="true"/> 
+                <Attribute Name="CreatedDateTime" Type="System.DateTime"/> 
+                <Attribute Name="UpdatedDateTime" Type="System.DateTime"/> 
+                <Attribute Name="Version" Type="System.Byte[]" IsVersion="true"/> 
+                <Attribute Name="CaseHeaderId" Type="System.Int32"/> 
+                <Attribute Name="SentDateTime" Type="System.DateTime"/> 
+                <Attribute Name="MessageGuid" Type="System.Guid"/> 
+                <Attribute Name="OriginalProcessedDateTime" Type="System.DateTime"/> 
+                <Attribute Name="TransactionCode" Type="System.String"/> 
+                <Attribute Name="RxNumber" Type="System.String"/> 
+                <Attribute Name="Ndc" Type="System.String"/> 
+                <Attribute Name="FillNumber" Type="System.Int32"/> 
+                <Attribute Name="Bin" Type="System.String"/> 
+                <Attribute Name="Pcn" Type="System.String"/> 
+                <Attribute Name="PharmacyNcpdp" Type="System.String"/> 
+                <Attribute Name="PharmacyNpi" Type="System.String"/> 
+                <Attribute Name="PatientFirstName" Type="System.String"/> 
+                <Attribute Name="PatientLastName" Type="System.String"/> 
+                <Attribute Name="PatientGenderCode" Type="System.Nullable&lt;System.Char&gt;"/> 
+                <Attribute Name="PatientDateOfBirth" Type="System.Nullable&lt;System.DateTime&gt;"/> 
+                <Attribute Name="PatientStreetAddress" Type="System.String"/> 
+                <Attribute Name="PatientCityAddress" Type="System.String"/> 
+                <Attribute Name="PatientState" Type="System.String"/> 
+                <Attribute Name="PatientPhoneNumber" Type="System.String"/> 
+                <Attribute Name="PatientLocation" Type="System.String"/> 
+                <Attribute Name="PatientZipCode" Type="System.String"/> 
+                <Attribute Name="CardHolderKey" Type="System.String"/> 
+                <Attribute Name="PlanKey" Type="System.String"/> 
+                <Attribute Name="GroupKey" Type="System.String"/> 
+                <Attribute Name="PersonCode" Type="System.String"/> 
+                <Attribute Name="PatientRelationshipCode" Type="System.String"/> 
+                <Attribute Name="DateOfService" Type="System.Nullable&lt;System.DateTime&gt;"/> 
+                <Attribute Name="QuantityDispensed" Type="System.Nullable&lt;System.Decimal&gt;"/> 
+                <Attribute Name="DaysSupply" Type="System.Nullable&lt;System.Int32&gt;"/> 
+                <Attribute Name="CompoundCode" Type="System.String"/> 
+                <Attribute Name="DawProductSelectionCode" Type="System.String"/> 
+                <Attribute Name="DatePrescriptionWritten" Type="System.Nullable&lt;System.DateTime&gt;"/> 
+                <Attribute Name="NumberOfRefillsAuthorized" Type="System.Nullable&lt;System.Int32&gt;"/> 
+                <Attribute Name="OtherCoverageCode" Type="System.Nullable&lt;System.Int32&gt;"/> 
+                <Attribute Name="OtherPaymentsCount" Type="System.Nullable&lt;System.Int32&gt;"/> 
+                <Attribute Name="DispensingStatus" Type="System.Nullable&lt;System.Char&gt;"/> 
+                <Attribute Name="PatientPayAmount" Type="System.Nullable&lt;System.Decimal&gt;"/> 
+                <Attribute Name="PrescriberKeyQualifier" Type="System.String"/> 
+                <Attribute Name="PrescriberKey" Type="System.String"/> 
+                <Attribute Name="PrescriberLastName" Type="System.String"/> 
+                <Attribute Name="PrescriberPhoneNumber" Type="System.String"/> 
+                <ParentReference Name="CaseHeader" ChildKey="CaseHeaderId" ParentType="CaseHeader" ParentKey="Id"/>
+            </Properties>
+            <Operations>
+                <Create Visibility="Public" />
+                <Read Visibility="Public" />
+                <Update Visibility="Public" />
+                <!-- Delete Visibility="Public" / -->
+                    <ReadByParent Visibility="Public" Name="ReadByCaseHeader" ParentType="CaseHeader" ChildKey="CaseHeaderId" ParentKey="Id" />
+                    <ReadParent Visibility="Public" Name="ReadCaseHeader" ParentType="CaseHeader" ChildKey="CaseHeaderId" ParentKey="Id" />
+            </Operations>
+        </Service>
+    </Services>
+    <Factypes>
+        <Factype Name="CaseCompletionHandlerType" MonikerName="Moniker" >
+            <Properties>
+                <Attribute Name="Description" Type="System.String"  />
+                <ChildReference Name="CaseCompletionHandlerEvents" ParentKey="Moniker" ChildType="CaseCompletionHandlerEvent" ChildKey="CaseCompletionHandlerTypeMoniker"/>
+                <ChildReference Name="CaseHeaders" ParentKey="Moniker" ChildType="CaseHeader" ChildKey="CaseCompletionHandlerTypeMoniker"/>
+                <ChildReference Name="LastHandlerCaseHeaders" ParentKey="Moniker" ChildType="CaseHeader" ChildKey="LastHandlerMoniker"/>
+                <ChildReference Name="TaskDefinitions" ParentKey="Moniker" ChildType="TaskDefinition" ChildKey="CaseCompletionHandlerTypeMoniker"/>
+            </Properties>  
+            <Operations>
+            </Operations>			
+        </Factype>
+        <Factype Name="DispositionType" MonikerName="Moniker" >
+            <Properties>
+                <Attribute Name="Description" Type="System.String"  />
+                <ChildReference Name="StatusTypes" ParentKey="Moniker" ChildType="StatusType" ChildKey="DispositionTypeMoniker"/>
+            </Properties>  
+            <Operations>
+            </Operations>			
+        </Factype>
+        <Factype Name="EventDataType" MonikerName="Moniker" >
+            <Properties>
+                <Attribute Name="Description" Type="System.String"  />
+                <ChildReference Name="CaseHeaderEvents" ParentKey="Moniker" ChildType="CaseHeaderEvent" ChildKey="DataTypeMoniker"/>
+            </Properties>  
+            <Operations>
+            </Operations>			
+        </Factype>
+        <Factype Name="StatusType" MonikerName="Moniker" >
+            <Properties>
+                <Attribute Name="Description" Type="System.String"  />
+                <Attribute Name="DispositionTypeMoniker" Type="System.String"  />
+                <ChildReference Name="CaseHeaders" ParentKey="Moniker" ChildType="CaseHeader" ChildKey="StatusTypeMoniker"/>
+                <ChildReference Name="CaseHeaderEvents" ParentKey="Moniker" ChildType="CaseHeaderEvent" ChildKey="StatusTypeMoniker"/>
+                <ParentReference Name="DispositionType" ChildKey="DispositionTypeMoniker" ParentType="DispositionType" ParentKey="Moniker"/>
+            </Properties>  
+            <Operations>
+                    <GetByParent Visibility="Public" Name="GetByDispositionType" ParentType="DispositionType" ChildKey="DispositionTypeMoniker" />
+            </Operations>			
+        </Factype>
+    </Factypes>
+    <ViewLists>
+      <ViewList Name="MatchingRuleViewList">
+        <Properties>
+          <Attribute Name="MatchingRule_Id" Type="System.Int32"/>
+          <Attribute Name="MatchingRule_CreatedDateTime" Type="System.DateTime"/>
+          <Attribute Name="MatchingRule_TaskDefinitionId" Type="System.Int32"/>
+          <Attribute Name="MatchingRule_Ndc" Type="System.String"/>
+          <Attribute Name="MatchingRule_FillNumber" Type="System.Nullable&lt;System.Int32&gt;"/>
+          <Attribute Name="MatchingRule_TargetDrugName" Type="System.String"/>
+          <Attribute Name="TaskDefinition_MkxProgramMoniker" Type="System.String"/>
+        </Properties>
+      </ViewList>
+      <ViewList Name="WebServiceFaultViewList">
+        <Properties>
+          <Attribute Name="WebServiceFault_Id" Type="System.Int32"/>
+          <Attribute Name="WebServiceFault_CreatedDateTime" Type="System.DateTime"/>
+          <Attribute Name="WebServiceFault_ServerName" Type="System.String"/>
+          <Attribute Name="WebServiceFault_ServiceName" Type="System.String"/>
+          <Attribute Name="WebServiceFault_RouteUrl" Type="System.String"/>
+          <Attribute Name="WebServiceFault_Path" Type="System.String"/>
+          <Attribute Name="WebServiceFault_ApplicationPath" Type="System.String"/>
+          <Attribute Name="WebServiceFault_RelativeExecutionPath" Type="System.String"/>
+          <Attribute Name="WebServiceFault_ServerAddress" Type="System.String"/>
+          <Attribute Name="WebServiceFault_ClientAddress" Type="System.String"/>
+          <Attribute Name="WebServiceFault_HttpMethod" Type="System.String"/>
+          <Attribute Name="WebServiceFault_Https" Type="System.Nullable&lt;System.Boolean&gt;"/>
+          <Attribute Name="WebServiceFault_HostName" Type="System.String"/>
+          <Attribute Name="WebServiceFault_ServerPort" Type="System.Nullable&lt;System.Int32&gt;"/>
+          <Attribute Name="WebServiceFault_RawUrl" Type="System.String"/>
+          <Attribute Name="WebServiceFault_ExceptionType" Type="System.String"/>
+          <Attribute Name="WebServiceFault_ExceptionMessage" Type="System.String"/>
+          <Attribute Name="WebServiceFault_ExceptionUserMessage" Type="System.String"/>
+          <Attribute Name="WebServiceFault_ExceptionSource" Type="System.String"/>
+          <Attribute Name="WebServiceFault_ExceptionTargetSite" Type="System.String"/>
+          <Attribute Name="WebServiceFault_FaultKey" Type="System.String"/>
+          <Attribute Name="WebServiceFault_Fault" Type="System.Xml.Linq.XElement"/>
+          <Attribute Name="WebServiceFault_ServerVariables" Type="System.Xml.Linq.XElement"/>
+          <Attribute Name="WebServiceFault_RequestHeaders" Type="System.Xml.Linq.XElement"/>
+          <Attribute Name="WebServiceFault_RequestBody" Type="System.String"/>
+        </Properties>
+      </ViewList>
+    </ViewLists>
+    <Pocos>
+    </Pocos>
+</ServicedApi>

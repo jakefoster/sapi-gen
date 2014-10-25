@@ -1,0 +1,195 @@
+﻿<#@ assembly name="System.Core" #>
+<#@ assembly name="System.Xml" #>
+<#@ assembly name="System.Xml.Linq" #>
+<#@ import namespace="org.ncore.ServicedApi.CodeGenerator.Api" #>
+<#@ import namespace="org.ncore.ServicedApi.CodeGenerator.Api.Model" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.IO" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Xml" #>
+<#@ import namespace="System.Xml.Linq" #>
+<#@ import namespace="org.ncore.Common" #>
+<#
+ServicedApiModel model = ( (org.ncore.ServicedApi.CodeGenerator.T4Templating.TemplatingHost)Host ).Model;
+string serviceName = Host.ResolveParameterValue( null, null, "TargetObjectName" );
+ServiceModel service = model.Services[ serviceName ];
+#>
+<#@ include file="Header.generated.cs.t4" #>
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.Serialization;
+using System.Text;
+using System.Transactions;
+using org.ncore.Common;
+using org.ncore.Diagnostics;
+using org.ncore.ServicedApi;
+using org.ncore.ServicedApi.Persistence;
+using Entities = <#=model.Namespace#>.Api.Services;
+using <#=model.Namespace#>.Api.Silos;
+using <#=model.Namespace#>.Orm.Fake;
+using StoreTypes = <#=model.Namespace#>.Orm.Fake.StoreTypes;
+
+namespace <#=model.Namespace#>.Orm.Fake.Stores
+{
+	[Serializable]
+	[DataContract]
+    public partial class <#=service.Name#>Store
+    {
+        private ObjectStore _parentStore;
+		[DataMember]
+        private <#=service.IdentifierProperty.Type#> _next<#=service.IdentifierProperty.Name#> = 1;
+		[DataMember]
+        private Dictionary<int, StoreTypes.<#=service.Name#>> _shadowEntries = new Dictionary<int, StoreTypes.<#=service.Name#>>();
+        [DataMember]
+		private Dictionary<int, StoreTypes.<#=service.Name#>> _entries = new Dictionary<int, StoreTypes.<#=service.Name#>>();
+
+        public <#=service.Name#>Store( ObjectStore parentStore )
+        {
+            _parentStore = parentStore;
+        }
+
+        public Dictionary< <#=service.IdentifierProperty.Type#>, StoreTypes.<#=service.Name#>> Entries
+        {
+            get
+            {
+                return _entries;
+            }
+        }
+
+        public Dictionary< <#=service.IdentifierProperty.Type#>, StoreTypes.<#=service.Name#>>.ValueCollection Items
+        {
+            get
+            {
+                return _entries.Values;
+            }
+        }
+
+        public <#=service.IdentifierProperty.Type#> GetNext<#=service.IdentifierProperty.Name#>()
+        {
+            <#=service.IdentifierProperty.Type#> value = _next<#=service.IdentifierProperty.Name#>;
+            _nextId++;
+            return value;
+        }
+
+        public StoreTypes.<#=service.Name#> Create( StoreTypes.<#=service.Name#> item )
+        {
+            item.<#=service.IdentifierProperty.Name#> = GetNext<#=service.IdentifierProperty.Name#>();
+<#
+if( service.VersionProperty != null )
+{
+#>
+            item.<#=service.VersionProperty.Name#> = _parentStore.GetNextVersion();
+<#
+}
+#>
+            if( _parentStore.EnforceReferentialIntegrity )
+            {
+                _verifyParentReferentialIntegrity( item );
+            }
+			
+            _entries.Add( item.<#=service.IdentifierProperty.Name#>, item );
+            return item;
+        }
+
+        public StoreTypes.<#=service.Name#> Read( <#=service.IdentifierProperty.Type#> <#=service.IdentifierProperty.Name.ToInternalName()#> )
+        {
+            return _entries[ <#=service.IdentifierProperty.Name.ToInternalName()#> ];
+        }
+
+        public StoreTypes.<#=service.Name#> Update( StoreTypes.<#=service.Name#> item )
+        {
+<#
+if( service.VersionProperty != null )
+{
+#>
+            item.<#=service.VersionProperty.Name#> = _parentStore.GetNextVersion();
+<#
+}
+#>
+            if( _parentStore.EnforceReferentialIntegrity )
+            {
+                _verifyParentReferentialIntegrity( item );
+            }
+			
+            _entries[ item.<#=service.IdentifierProperty.Name#> ] = item;
+            return item;
+        }
+
+        public void Delete( <#=service.IdentifierProperty.Type#> <#=service.IdentifierProperty.Name.ToInternalName()#> )
+        {
+            _verifyChildReferentialIntegrity( _entries[ <#=service.IdentifierProperty.Name.ToInternalName()#> ] );
+            _entries.Remove( <#=service.IdentifierProperty.Name.ToInternalName()#> );
+        }
+
+        public void BeginTransaction()
+        {
+            _shadowEntries = new Dictionary<int, StoreTypes.<#=service.Name#>>( _entries );
+        }
+
+        public void CompleteTransaction( bool commit )
+        {
+            if( commit )
+            {
+                _shadowEntries = null;
+            }
+            else
+            {
+                _entries = new Dictionary<int, StoreTypes.<#=service.Name#>>( _shadowEntries );
+            }
+        }
+		
+		private void _verifyParentReferentialIntegrity( StoreTypes.<#=service.Name#> item )
+        {
+<#
+foreach( ParentReferencePropertyModel parentReference in service.ParentReferences.Values )
+{
+	if( model.Services.Keys.Contains( parentReference.ParentType ) )
+	{
+		ServiceModel parentService = model.Services[ parentReference.ParentType ];
+#>
+            if( item.<#=parentReference.ChildKey#> != null && !( _parentStore.<#=parentService.PluralName#>.Items.Count( related => related.<#=parentReference.ParentKey#> == item.<#=parentReference.ChildKey#> ) > 0 ) )
+            {
+				// TODO: Custom exception type
+                throw new ApplicationException( String.Format( "Referential integrity violation.  Entity store <#=parentService.PluralName#> has no entity with <#=parentReference.ParentKey#> key value {0}.", item.<#=parentReference.ChildKey#> )  );
+            }
+<#
+	}
+	else if( model.Factypes.Keys.Contains( parentReference.ParentType ) )
+	{
+		FactypeModel parentFactype = model.Factypes[ parentReference.ParentType ];
+#>
+            if( item.<#=parentReference.ChildKey#> != null && !( _parentStore.<#=parentFactype.PluralName#>.Items.Count( related => related.<#=parentReference.ParentKey#> == item.<#=parentReference.ChildKey#> ) > 0 ) )
+            {
+				// TODO: Custom exception type
+                throw new ApplicationException( String.Format( "Referential integrity violation.  Factype <#=parentFactype.PluralName#> has no entry with <#=parentReference.ParentKey#> key value {0}.", item.<#=parentReference.ChildKey#> )  );
+            }
+<#
+	}
+}
+#>      
+        }
+        
+		private void _verifyChildReferentialIntegrity( StoreTypes.<#=service.Name#> item )
+        {
+			// NOTE: This will never have Factypes as children since a ServiceObject would never have a Factype that depended on it.  JF
+<#
+foreach( ChildReferencePropertyModel childReference in service.ChildReferences.Values )
+{
+	if( model.Services.Keys.Contains( childReference.ChildType ) )
+	{
+		ServiceModel childService = model.Services[ childReference.ChildType ];
+#>
+            if( _parentStore.<#=childService.PluralName#>.Items.Count( related => related.<#=childReference.ChildKey#> == item.<#=childReference.ParentKey#> ) > 0 )
+            {
+				// TODO: Custom exception type
+                throw new ApplicationException( String.Format( "Referential integrity violation.  Entity store <#=childService.PluralName#> has Entities with <#=childReference.ChildKey#> key value {0}.", item.<#=childReference.ParentKey#> )  );
+            }
+<#
+	}
+}
+#> 
+        }
+    }
+}

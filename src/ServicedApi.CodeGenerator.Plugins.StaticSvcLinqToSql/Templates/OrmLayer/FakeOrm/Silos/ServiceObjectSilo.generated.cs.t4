@@ -1,0 +1,247 @@
+﻿<#@ assembly name="System.Core" #>
+<#@ assembly name="System.Xml" #>
+<#@ assembly name="System.Xml.Linq" #>
+<#@ import namespace="org.ncore.ServicedApi.CodeGenerator.Api" #>
+<#@ import namespace="org.ncore.ServicedApi.CodeGenerator.Api.Model" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.IO" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Xml" #>
+<#@ import namespace="System.Xml.Linq" #>
+<#@ import namespace="org.ncore.Common" #>
+<#
+ServicedApiModel model = ( (org.ncore.ServicedApi.CodeGenerator.T4Templating.TemplatingHost)Host ).Model;
+string serviceName = Host.ResolveParameterValue( null, null, "TargetObjectName" );
+ServiceModel service = model.Services[ serviceName ];
+#>
+<#@ include file="Header.generated.cs.t4" #>
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using org.ncore.Common;
+using org.ncore.ServicedApi;
+using org.ncore.ServicedApi.Persistence;
+using Entities = <#=model.Namespace#>.Api.Services;
+using <#=model.Namespace#>.Api.Silos;
+using <#=model.Namespace#>.Orm.Fake.Stores;
+using StoreTypes = <#=model.Namespace#>.Orm.Fake.StoreTypes;
+
+namespace <#=model.Namespace#>.Orm.Fake.Silos
+{
+    public partial class <#=service.Name#>Silo : IDataSilo, I<#=service.Name#>Silo
+    {
+		private FakeDataContext _context
+        {
+            get
+            {
+                return (FakeDataContext)ServiceContext.Current.DataContext;
+            }
+        }
+		
+	    private ObjectStore _store
+        {
+            get
+            {
+                return FakeDataContext.ObjectStore;
+            }
+        }
+	
+		private <#=service.Name#>Store _typedStore
+        {
+            get
+            {
+                return FakeDataContext.ObjectStore.<#=service.PluralName#>;
+            }
+        }
+		
+		public <#=service.Name#>Silo()
+        {
+        }
+				
+<#	
+	if( service.CreateOperation != null )
+	{	
+#>
+		public void Create( Entities.<#=service.Name#> instance )
+        {
+            StoreTypes.<#=service.Name#> storeObject = new StoreTypes.<#=service.Name#>();
+
+            _copyMembers( instance, storeObject );
+
+			_typedStore.Create( storeObject );
+
+            _copyMembers( storeObject, instance );
+        }
+		
+<#
+	}
+	
+	if( service.ReadOperation != null )
+	{
+#>
+		public Entities.<#=service.Name#> Read( <#=service.IdentifierProperty.Type#> <#=service.IdentifierProperty.Name.ToInternalName()#> )
+        {
+            StoreTypes.<#=service.Name#> storeObject = _typedStore.Read( <#=service.IdentifierProperty.Name.ToInternalName()#> );
+            return _toEntity( storeObject );
+        }
+		
+<#
+	}
+	
+	if( service.UpdateOperation != null )
+	{
+#>        
+		public void Update( Entities.<#=service.Name#> instance )
+        {
+            StoreTypes.<#=service.Name#> storeObject = _typedStore.Read( instance.<#=service.IdentifierProperty.Name#> );
+
+            _copyMembers( instance, storeObject );
+
+            _typedStore.Update( storeObject );
+
+            _copyMembers( storeObject, instance );
+        }
+		
+<#
+	}
+	
+	if( service.DeleteOperation != null )
+	{
+#>
+		public void Delete( <#=service.IdentifierProperty.Type#> <#=service.IdentifierProperty.Name.ToInternalName()#> )
+		{
+			_typedStore.Delete( <#=service.IdentifierProperty.Name.ToInternalName()#> );
+		}
+		
+<#
+	}
+	
+	foreach( ReadByParentOperationModel operation in service.ReadByParentOperations.Values )
+	{
+#>
+		public List< Entities.<#=service.Name#> > <#=operation.Name#>( <#=operation.KeyType#> <#=operation.ParentKey.ToInternalName()#> )
+        {
+			List<StoreTypes.<#=service.Name#>> storeObjects = _store.<#=service.PluralName#>.Items.Where( c => c.<#=operation.ChildKey#> == <#=operation.ParentKey.ToInternalName()#> ).ToList();
+            return _toEntities( storeObjects );
+        }
+<#
+	}
+#>
+        private List< Entities.<#=service.Name#> > _toEntities( List<StoreTypes.<#=service.Name#>> storeObjects )
+        {
+            List< Entities.<#=service.Name#> > entities = new List< Entities.<#=service.Name#> >( storeObjects.Count );
+            foreach( StoreTypes.<#=service.Name#> storeObject in storeObjects )
+            {
+                Entities.<#=service.Name#> entitiy = _toEntity( storeObject );
+                entities.Add( entitiy );
+            }
+            return entities;
+        }
+		
+		private List<StoreTypes.<#=service.Name#>> _toStoreObjects( List< Entities.<#=service.Name#> > entities )
+        {
+            List<StoreTypes.<#=service.Name#>> storeObjects = new List<StoreTypes.<#=service.Name#>>( entities.Count );
+            foreach( Entities.<#=service.Name#> entity in entities )
+            {
+                StoreTypes.<#=service.Name#> storeObject = _toStoreObject( entity );
+                storeObjects.Add( storeObject );
+            }
+            return storeObjects;
+        }
+		
+		private Entities.<#=service.Name#> _toEntity( StoreTypes.<#=service.Name#> storeObject )
+        {
+            if( storeObject == null )
+            {
+                return null;
+            }
+
+            Entities.<#=service.Name#> entity = new Entities.<#=service.Name#>();
+            _copyMembers( storeObject, entity );
+            return entity;
+        }
+		
+		private StoreTypes.<#=service.Name#> _toStoreObject( Entities.<#=service.Name#> entity )
+        {
+            if( entity == null )
+            {
+                return null;
+            }
+
+            StoreTypes.<#=service.Name#> storeObject = new StoreTypes.<#=service.Name#>();
+            _copyMembers( entity, storeObject );
+            return storeObject;
+        }
+		
+		
+        partial void _beforeCopyMembers( Entities.<#=service.Name#> from, StoreTypes.<#=service.Name#> to );
+        partial void _afterCopyMembers( Entities.<#=service.Name#> from, StoreTypes.<#=service.Name#> to );
+        private void _copyMembers( Entities.<#=service.Name#> from, StoreTypes.<#=service.Name#> to )
+        {
+            if( from == null )
+            {
+                // TODO: Custom exception type. JF
+                throw new ApplicationException( "The supplied From object is null." );
+            }
+			_beforeCopyMembers( from, to );
+<#
+	foreach( ServiceAttributeModel property in service.Attributes.Values )
+	{
+		string propertyType = property.Type;
+		if( property.IsVersion && ( property.Type == "System.Byte[]" || property.Type == "Byte[]" || property.Type == "byte[]" ) )
+		{
+#>
+			if( from.Version != null )
+            {
+                to.Version = HexString.ToByteArray( from.Version );
+            }
+<#
+		}
+		else
+		{
+#>
+			to.<#=property.Name#> = from.<#=property.Name#>;
+<#
+		}
+	}
+#>
+			_afterCopyMembers( from, to );
+		}
+		
+        partial void _beforeCopyMembers( StoreTypes.<#=service.Name#> from, Entities.<#=service.Name#> to );
+        partial void _afterCopyMembers( StoreTypes.<#=service.Name#> from, Entities.<#=service.Name#> to );
+        private void _copyMembers( StoreTypes.<#=service.Name#> from, Entities.<#=service.Name#> to )
+        {
+            if( from == null )
+            {
+                // TODO: Custom exception type. JF
+                throw new ApplicationException( "The supplied From object is null." );
+            }
+			_beforeCopyMembers( from, to );
+<#
+	foreach( ServiceAttributeModel property in service.Attributes.Values )
+	{
+		string propertyType = property.Type;
+		if( property.IsVersion && ( property.Type == "System.Byte[]" || property.Type == "Byte[]" || property.Type == "byte[]" ) )
+		{
+#>
+			if( from.Version != null )
+            {
+                to.Version = HexString.FromByteArray( from.Version.ToArray() );
+            }
+<#
+		}
+		else
+		{
+#>
+			to.<#=property.Name#> = from.<#=property.Name#>;
+<#
+		}
+    }
+#>
+			_afterCopyMembers( from, to );
+		}
+    }
+}

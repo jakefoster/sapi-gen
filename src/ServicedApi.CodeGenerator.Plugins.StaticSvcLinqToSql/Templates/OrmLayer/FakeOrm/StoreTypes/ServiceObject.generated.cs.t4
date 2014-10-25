@@ -1,0 +1,104 @@
+﻿<#@ assembly name="System.Core" #>
+<#@ assembly name="System.Xml" #>
+<#@ assembly name="System.Xml.Linq" #>
+<#@ import namespace="org.ncore.ServicedApi.CodeGenerator.Api" #>
+<#@ import namespace="org.ncore.ServicedApi.CodeGenerator.Api.Model" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.IO" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Xml" #>
+<#@ import namespace="System.Xml.Linq" #>
+<#@ import namespace="org.ncore.Common" #>
+<#
+ServicedApiModel model = ( (org.ncore.ServicedApi.CodeGenerator.T4Templating.TemplatingHost)Host ).Model;
+string serviceName = Host.ResolveParameterValue( null, null, "TargetObjectName" );
+ServiceModel service = model.Services[ serviceName ];
+#>
+<#@ include file="Header.generated.cs.t4" #>
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.Serialization;
+using System.Text;
+using System.Transactions;
+using org.ncore.Common;
+using org.ncore.Extensions;
+using org.ncore.ServicedApi;
+using org.ncore.ServicedApi.Container;
+using org.ncore.ServicedApi.Persistence;
+using <#=model.Namespace#>.Api.Silos;
+
+namespace <#=model.Namespace#>.Orm.Fake.StoreTypes
+{
+	[Serializable]
+    public partial class <#=service.Name#>
+    {
+		#region Member Variables & Properties
+		protected <#=service.Name#> _Original { get; set; }		
+        protected I<#=service.Name#>Silo _Silo
+        {
+            get { return (I<#=service.Name#>Silo)ServiceContext.Current.DataContext.GetSilo<I<#=service.Name#>Silo>(); }
+        }
+
+<#
+	foreach( ServiceAttributeModel property in service.Attributes.Values )
+	{
+		// TODO: Does this belong in the ServiceModel object?  JF
+		string propertyType = property.Type;
+#>
+		protected <#=propertyType#> _<#=property.Name#>;
+		<#=property.Visibility.Keyword#> <#=propertyType#> <#=property.Name#>
+        {
+            get
+            {
+				return this._<#=property.Name#>;
+            }
+            set
+            {
+                this._<#=property.Name#> = value;
+            }
+        }
+<#
+	}
+
+	foreach( ParentReferencePropertyModel property in service.ParentReferences.Values )
+	{
+		// TODO: Factypes aren't visibile to the .Entities namespace.  Not quite sure how to deal with this.  JF
+		// return (< #=property.ParentType# >)this.< #=property.ChildKey# >;
+		if( model.Services.ContainsKey( property.ParentType ) )
+		{
+#>
+        <#=property.Visibility.Keyword#> <#=property.ParentType#> <#=property.Name#>
+        {
+            get
+            {
+                return FakeDataContext.ObjectStore.<#=model.Services[ property.ParentType ].PluralName#>.Items.Where( it => it.<#=property.ParentKey#> == this.<#=property.ChildKey#> ).DefaultIfEmpty( null ).SingleOrDefault();
+            }
+        }
+
+<#
+		}
+	}
+
+	foreach( ChildReferencePropertyModel property in service.ChildReferences.Values )
+	{
+		// TODO: Don't have the same issue w/Factypes as above because a Factype will NEVER be a child (except of another Factype - this template is building a service entitiy, not a Factype.)  JF
+		if( model.Services.ContainsKey( property.ChildType ) )
+        {
+#>
+        <#=property.Visibility.Keyword#> List< <#=property.ChildType#> > <#=property.Name#>
+        {
+            get
+            {
+                return FakeDataContext.ObjectStore.<#=model.Services[ property.ChildType ].PluralName#>.Items.Where( it => it.<#=property.ChildKey#> == this.<#=property.ParentKey#> ).ToList();
+            }
+        }
+
+<#
+        }
+	}
+#>
+        #endregion Member Variables & Properties
+    }
+}

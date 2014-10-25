@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <Configuration>
+    <ServicedApiXmlFileLocation></ServicedApiXmlFileLocation>
+    <OutputRootPath></OutputRootPath>
+    <GeneratorPlugin>
+      <Name></Name>
+      <PluginSettings />
+    </GeneratorPlugin>
+  </Configuration>
+</Project>

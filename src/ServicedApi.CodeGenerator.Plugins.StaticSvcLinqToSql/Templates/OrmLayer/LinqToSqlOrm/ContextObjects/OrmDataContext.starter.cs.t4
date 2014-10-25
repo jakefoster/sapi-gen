@@ -1,0 +1,41 @@
+﻿<#@ assembly name="System.Core" #>
+<#@ assembly name="System.Xml" #>
+<#@ assembly name="System.Xml.Linq" #>
+<#@ import namespace="org.ncore.ServicedApi.CodeGenerator.Api" #>
+<#@ import namespace="org.ncore.ServicedApi.CodeGenerator.Api.Model" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.IO" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Xml" #>
+<#@ import namespace="System.Xml.Linq" #>
+<#@ import namespace="org.ncore.Common" #>
+<#
+	ServicedApiModel model = ( (org.ncore.ServicedApi.CodeGenerator.T4Templating.TemplatingHost)Host ).Model;
+#>
+<#@ include file="Header.starter.cs.t4" #>
+using System;
+using System.Configuration;
+using System.Data;
+using System.Data.Common;
+using System.Collections.Generic;
+using System.Linq;
+using System.Data.Linq;
+using System.Data.Linq.Mapping;
+using System.Text;
+using System.Transactions;
+using System.Reflection;
+using org.ncore.ServicedApi;
+using org.ncore.ServicedApi.Persistence;
+using <#=model.Namespace#>.Api;
+using <#=model.Namespace#>.Api.Silos;
+using <#=model.Namespace#>.Orm.LinqToSql.Silos;
+
+namespace <#=model.Namespace#>.Orm.LinqToSql
+{
+    public partial class OrmDataContext : IDataContext, IDisposable
+    {
+        //partial void _before_initialize();
+        //partial void _after_initialize();
+    }
+}
