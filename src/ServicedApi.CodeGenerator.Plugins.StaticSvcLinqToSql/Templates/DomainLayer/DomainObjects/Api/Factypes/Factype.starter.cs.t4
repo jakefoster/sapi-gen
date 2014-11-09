@@ -52,8 +52,9 @@ using System.Text;
 using System.Transactions;
 using org.ncore.Common;
 using org.ncore.Extensions;
+using org.ncore.Ioc;
 using org.ncore.ServicedApi;
-using org.ncore.ServicedApi.Container;
+
 
 namespace <#=model.Namespace#>.Api.Services
 {

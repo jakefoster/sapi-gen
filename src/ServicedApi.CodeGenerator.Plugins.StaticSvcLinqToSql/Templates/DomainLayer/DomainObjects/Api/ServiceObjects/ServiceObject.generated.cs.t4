@@ -25,7 +25,7 @@ using System.Transactions;
 using org.ncore.Common;
 using org.ncore.Extensions;
 using org.ncore.ServicedApi;
-using org.ncore.ServicedApi.Container;
+using org.ncore.Ioc;
 using org.ncore.ServicedApi.Persistence;
 using <#=model.Namespace#>.Api.Silos;
 
@@ -115,7 +115,7 @@ namespace <#=model.Namespace#>.Api.Services
 #>
         public static <#=service.Name#> Create( <#=service.Name#> instance )
         {
-            using( ServiceContext.Current = new ServiceContext( Kernel.GetOrCreateObject<IDataContext>() ) )
+            using( ServiceContext.Current = new ServiceContext( New.Instance<IDataContext>(null) ) )
             {
                 instance.create();
                 return instance.Clone();
@@ -173,7 +173,7 @@ namespace <#=model.Namespace#>.Api.Services
 #>
 		public static <#=service.Name#> Read( <#=service.IdentifierProperty.Type#> <#=service.IdentifierProperty.Name.ToInternalName()#> )
         {
-            using( ServiceContext.Current = new ServiceContext( Kernel.GetOrCreateObject<IDataContext>() ) )
+            using( ServiceContext.Current = new ServiceContext( New.Instance<IDataContext>( null ) ) )
             {
                 return <#=service.Name#>.read( <#=service.IdentifierProperty.Name.ToInternalName()#> );
             }
@@ -232,7 +232,7 @@ namespace <#=model.Namespace#>.Api.Services
 #>
         public static <#=service.Name#> Update( <#=service.Name#> instance )
         {
-            using( ServiceContext.Current = new ServiceContext( Kernel.GetOrCreateObject<IDataContext>() ) )
+            using( ServiceContext.Current = new ServiceContext( New.Instance<IDataContext>( null ) ) )
             {
                 instance.update();
                 return instance.Clone();
@@ -304,7 +304,7 @@ namespace <#=model.Namespace#>.Api.Services
 #>
         public static void Delete( <#=service.IdentifierProperty.Type#> <#=service.IdentifierProperty.Name.ToInternalName()#> )
         {
-            using( ServiceContext.Current = new ServiceContext( Kernel.GetOrCreateObject<IDataContext>() ) )
+            using( ServiceContext.Current = new ServiceContext( New.Instance<IDataContext>( null ) ) )
             {
                 <#=service.Name#>.delete( <#=service.IdentifierProperty.Name.ToInternalName()#> );
             }
@@ -366,7 +366,7 @@ namespace <#=model.Namespace#>.Api.Services
 #>
         public static List< <#=operation.ChildType#> > <#=operation.Name#>( <#=operation.KeyType#> <#=operation.ParentKey.ToInternalName()#> )
         {
-            using( ServiceContext.Current = new ServiceContext( Kernel.GetOrCreateObject<IDataContext>() ) )
+            using( ServiceContext.Current = new ServiceContext( New.Instance<IDataContext>( null ) ) )
             {
                 return <#=service.Name#>.<#=operation.Name.ToInternalName()#>( <#=operation.ParentKey.ToInternalName()#> );
             }
@@ -374,7 +374,7 @@ namespace <#=model.Namespace#>.Api.Services
 		
 		public List< <#=operation.ChildType#> > <#=operation.Name#>()
         {
-            using( ServiceContext.Current = new ServiceContext( Kernel.GetOrCreateObject<IDataContext>() ) )
+            using( ServiceContext.Current = new ServiceContext( New.Instance<IDataContext>( null ) ) )
             {
                 return this.<#=operation.Name.ToInternalName()#>();
             }
@@ -421,7 +421,7 @@ namespace <#=model.Namespace#>.Api.Services
 #>
 		public <#=operation.ParentType#> <#=operation.Name#>()
         {
-            using( ServiceContext.Current = new ServiceContext( Kernel.GetOrCreateObject<IDataContext>() ) )
+            using( ServiceContext.Current = new ServiceContext( New.Instance<IDataContext>( null ) ) )
             {
                 return this.<#=operation.Name.ToInternalName()#>();
             }
@@ -482,7 +482,7 @@ namespace <#=model.Namespace#>.Api.Services
 #>
         public static List< <#=service.Name#> > <#=operation.Name#>( <#=operation.KeyType#> <#=operation.ParentKey.ToInternalName()#> )
         {
-            using( ServiceContext.Current = new ServiceContext( Kernel.GetOrCreateObject<IDataContext>() ) )
+            using( ServiceContext.Current = new ServiceContext( New.Instance<IDataContext>( null ) ) )
             {
                 return <#=service.Name#>.<#=operation.Name.ToInternalName()#>( <#=operation.ParentKey.ToInternalName()#> );
             }
