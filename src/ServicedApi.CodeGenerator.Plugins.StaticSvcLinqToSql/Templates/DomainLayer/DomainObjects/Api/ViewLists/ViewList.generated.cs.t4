@@ -20,9 +20,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Mkx.Programs.Tmi.Api.Utility;
+
 using org.ncore.Common;
 using org.ncore.ServicedApi.Persistence;
+
+using <#=model.Namespace#>.Api.Silos;
+using <#=model.Namespace#>.Api.Utility;
 
 namespace <#=model.Namespace#>.Api.Services
 {
@@ -46,7 +49,7 @@ namespace <#=model.Namespace#>.Api.Services
         //    }
         //}
 		
-        public class Item : ViewListItem
+        public partial class Item : ViewListItem
         {
 <#
 	foreach( ViewListAttributeModel property in viewList.Attributes.Values )
